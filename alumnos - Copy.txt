@@ -1,0 +1,3 @@
+name,surname,id_card,phone1,phone2,phone3,email,client_num,pay_bank,bank_acc,pay_period,groups
+jon;bosque;465487231;465487231;;;jon@gmail.com;1
+silvia;hernando;6234;654546854;;;silvia@gmail.com;2
