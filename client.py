@@ -41,5 +41,6 @@ class Patient(Client):
 def check_integrity_clients_list(clients_list):
     get_id = lambda x : x.client_num
     map_ids = map(get_id, clients_list)
-    if len(set(map_ids)) < len(list(map_ids)):
+    list_ids = list(map_ids)
+    if len(set(list_ids)) < len(list_ids):
         raise ValueError('Clients IDs are not unique')
