@@ -28,7 +28,7 @@ class Gestion_EspacioAbierto:
         loading_label.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         self.loading_frame.tkraise()
 
-        # MAIN WINDOW DECLARATION
+        # WELCOME WINDOW DECLARATION
         self.welcome_frame = tk.Frame(self.root, background='yellow')
         self.welcome_frame.grid_rowconfigure(0, weight=1)
         self.welcome_frame.grid_columnconfigure(0, weight=1)
@@ -36,28 +36,54 @@ class Gestion_EspacioAbierto:
         welcome_label = tk.Label(self.welcome_frame, background='white', text='Bienvenido, hora de trabajar',
                                  font=("Helvetica", 24))
         welcome_label.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(100, 0), pady=(80, 0))
+        welcome_buttons_frame = tk.Frame(self.welcome_frame, background='red')
+        welcome_buttons_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        self.navigation_interface(welcome_buttons_frame)
 
-        welcome_clients_button = tk.Button(self.welcome_frame, command=self.clients_list_window, text='Clientes')
-        welcome_clients_button.grid(row=1, column=0, sticky=tk.N + tk.W, padx=(50, 50), pady=(50, 50))
-        # welcome_alumns_button =
-        # welcome_patients_button =
-        # welcome_groups_button =
-
+        # CLIENTS LIST WINDOW
         self.clients_list_frame = tk.Frame(self.root, background='blue')
         self.clients_list_frame.grid_rowconfigure(0, weight=1)
         self.clients_list_frame.grid_columnconfigure(0, weight=1)
         self.clients_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        # clients_list_stvar = tk.StringVar()
-        # clients_list_stvar.set('Object1 Object2')
-        # clients_list_listbox = tk.Listbox(self.clients_list_frame, listvariable=clients_list_stvar)
-        # clients_list_listbox.grid(row=1, column=0, sticky=tk.N + tk.W)
-        clients_list_table = Table(self.clients_list_frame)
-        clients_list_table.show()
+        table_frame = tk.Frame(self.clients_list_frame,background='black')
+        table_frame.grid(row=1,column=0, sticky=tk.N+tk.W)
+
+        clients_list_buttons_frame = tk.Frame(self.clients_list_frame, background='red')
+        clients_list_buttons_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        self.navigation_interface(clients_list_buttons_frame)
+
+        # NEW CLIENT WINDOW
+
+        # MODIFY CLIENT WINDOW
+
+
+
+        # GROUPS WINDOW
+        self.groups_list_frame = tk.Frame(self.root, background='yellow')
+        self.groups_list_frame.grid_rowconfigure(0, weight=1)
+        self.groups_list_frame.grid_columnconfigure(0, weight=1)
+        self.groups_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        groups_list_buttons_frame = tk.Frame(self.groups_list_frame, background='red')
+        groups_list_buttons_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        self.navigation_interface(groups_list_buttons_frame)
 
         self.loading_frame.tkraise()
 
         load_info_runner = th.Thread(target=self.load_info_start, name='Info Loader')
         load_info_runner.start()
+
+    def navigation_interface(self, parent_frame):
+        save_button = tk.Button(parent_frame, command=self.save_all_info, text='Guardar', width=10)
+        save_button.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        welcome_button = tk.Button(parent_frame, command=self.welcome_window, text='Bienvenida',
+                                           width=10)
+        welcome_button.grid(row=0, column=1, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        clients_button = tk.Button(parent_frame, command=self.clients_list_window, text='Clientes',
+                                           width=10)
+        clients_button.grid(row=0, column=2, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        groups_button = tk.Button(parent_frame, command=self.groups_list_window, text='Grupos',
+                                          width=10)
+        groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
 
     def load_info_start(self):
         self.loading_frame.tkraise()
@@ -70,6 +96,9 @@ class Gestion_EspacioAbierto:
     def loading_window(self):
         self.loading_frame.tkraise()
 
+    def welcome_window(self):
+        self.welcome_frame.tkraise()
+
     def clients_list_window(self):
         self.clients_list_frame.tkraise()
 
@@ -78,6 +107,9 @@ class Gestion_EspacioAbierto:
     # def new_client(self):
 
     # def modify_client_window(self,client):
+
+    def groups_list_window(self):
+        self.groups_list_frame.tkraise()
 
     # def group_window(self, group):
 
