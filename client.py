@@ -23,7 +23,7 @@ class Alumn(Client):
         self.pay_bank = bool(eval(pay_bank))
         self.bank_acc = bank_acc
         self.pay_period = pay_period
-        self.groups = eval(groups)
+        self.groups = eval(groups)  # set
 
     def __str__(self):
         ret_string = ';'.join([super().__str__(),str(self.pay_bank),self.bank_acc,self.pay_period,str(self.groups)])
@@ -36,3 +36,10 @@ class Patient(Client):
 
     def __str__(self):
         return
+
+
+def check_integrity_clients_list(clients_list):
+    get_id = lambda x : x.client_num
+    map_ids = map(get_id, clients_list)
+    if len(set(map_ids)) < len(list(map_ids)):
+        raise ValueError('Clients IDs are not unique')
