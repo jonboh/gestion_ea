@@ -9,12 +9,15 @@ import client as cl
 import group as gr
 
 
-class Gestion_EspacioAbierto:
+class GestionEspacioAbierto:
     def __init__(self, root):
         self.root = root
         self.root.title('Gestion Espacio Abierto v0.1')
-        self.root.geometry('800x600')
+        original_geometry = [800, 600]
+        str_original_geometry = map(str, original_geometry)
+        self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_program)
+        self.root.bind('<Configure>', self.resize_window)
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
 
@@ -45,9 +48,13 @@ class Gestion_EspacioAbierto:
         self.clients_list_frame.grid_rowconfigure(0, weight=1)
         self.clients_list_frame.grid_columnconfigure(0, weight=1)
         self.clients_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        table_frame = tk.Frame(self.clients_list_frame,background='black')
-        table_frame.grid(row=1,column=0, sticky=tk.N+tk.W)
-
+        clients_table_frame = tk.Frame(self.clients_list_frame, background='black')
+        clients_table_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        clients_table_label = tk.Label(clients_table_frame, text='Clientes: ', font=("Helvetica", 14))
+        clients_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.clients_listbox = tk.Listbox(clients_table_frame, width=int(original_geometry[0] * 0.1),
+                                          height=int(original_geometry[1] * 0.05))
+        self.clients_listbox.grid(row=1, column=0, sticky=tk.N + tk.W)
         clients_list_buttons_frame = tk.Frame(self.clients_list_frame, background='red')
         clients_list_buttons_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(clients_list_buttons_frame)
@@ -65,33 +72,41 @@ class Gestion_EspacioAbierto:
         self.groups_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         groups_list_buttons_frame = tk.Frame(self.groups_list_frame, background='red')
         groups_list_buttons_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        groups_table_frame = tk.Frame(self.groups_list_frame, background='black')
+        groups_table_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        groups_table_label = tk.Label(groups_table_frame, text='Grupos: ', font=("Helvetica", 14))
+        groups_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.groups_listbox = tk.Listbox(groups_table_frame)
+        self.groups_listbox.grid()
         self.navigation_interface(groups_list_buttons_frame)
 
         self.loading_frame.tkraise()
+        self.clients = io.load_clients(file_clients, cl.Client)
+        self.groups = io.load_groups(file_groups)
+        self.welcome_frame.tkraise()
 
-        load_info_runner = th.Thread(target=self.load_info_start, name='Info Loader')
-        load_info_runner.start()
+        self.clients_listbox_update()
+        self.groups_listbox_update()
 
     def navigation_interface(self, parent_frame):
         save_button = tk.Button(parent_frame, command=self.save_all_info, text='Guardar', width=10)
         save_button.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
         welcome_button = tk.Button(parent_frame, command=self.welcome_window, text='Bienvenida',
-                                           width=10)
+                                   width=10)
         welcome_button.grid(row=0, column=1, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
         clients_button = tk.Button(parent_frame, command=self.clients_list_window, text='Clientes',
-                                           width=10)
+                                   width=10)
         clients_button.grid(row=0, column=2, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
         groups_button = tk.Button(parent_frame, command=self.groups_list_window, text='Grupos',
-                                          width=10)
+                                  width=10)
         groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
 
-    def load_info_start(self):
-        self.loading_frame.tkraise()
-        self.clients = io.load_clients(file_clients, cl.Client)
-        # self.alumns = io.load_clients(file_alumns,cl.Alumn)
-        # self.patients = io.load_clients(file_alumns,cl.Alumn)
-        # self.groups = io.load_groups(file_groups, gr.Group)
-        self.welcome_frame.tkraise()
+    def resize_window(self, event):
+        if event.widget is self.root:
+            w = event.width
+            h = event.height
+            self.clients_listbox.config(width=int(w * 0.1), height=int(h * 0.05))
+            self.groups_listbox.config(width=int(w * 0.1), height=int(h * 0.05))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -101,6 +116,24 @@ class Gestion_EspacioAbierto:
 
     def clients_list_window(self):
         self.clients_list_frame.tkraise()
+
+    def clients_listbox_update(self):
+        # header = format_clients()
+        header = ' '.join(cl.Client.str_header)
+        self.clients_listbox.insert(tk.END, header)
+        for client in self.clients:
+            # entry = format_clients()
+            entry = ' '.join(str(client).split(';'))
+            self.clients_listbox.insert(tk.END, entry)
+
+    def groups_listbox_update(self):
+        # header = format_groups()
+        header = ' '.join(gr.Group.str_header)
+        self.groups_listbox.insert(tk.END, header)
+        for group in self.groups:
+            # entry = format_clients()
+            entry = ' '.join(str(group).split(';'))
+            self.groups_listbox.insert(tk.END, entry)
 
     # def client_window(self, client):
 
@@ -121,7 +154,7 @@ class Gestion_EspacioAbierto:
         io.write_clients(file_clients, self.clients, cl.Client)
         # io.write_clients(file_alumns, self.alumns, cl.Alumn)
         # io.write_clients(file_clients, self.patients, cl.Patient)
-        # io.write_groups(file_groups, self.groups, gr.Group)
+        io.write_groups(file_groups, self.groups)
 
     def close_program(self):
         self.save_all_info()
@@ -135,6 +168,6 @@ if __name__ == '__main__':
     file_groups = 'groups.txt'
 
     root = tk.Tk()
-    myapp = Gestion_EspacioAbierto(root)
+    myapp = GestionEspacioAbierto(root)
 
     root.mainloop()
