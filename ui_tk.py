@@ -20,6 +20,7 @@ class GestionEspacioAbierto:
         self.root.bind('<Configure>', self.resize_window)
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
+        self.listbox_proportion = [0.125, 0.05]
 
         # LOADING WINDOW DECLARATION
         self.loading_frame = tk.Frame(self.root, background='green')
@@ -64,8 +65,9 @@ class GestionEspacioAbierto:
                                               variable=self.al_chbox_var,
                                               command=lambda: self.clients_checkbox_update('Alumns'))
         self.alumns_checkbox.grid(row=0, column=2, sticky=tk.N + tk.E)
-        self.clients_listbox = tk.Listbox(clients_table_frame, width=int(original_geometry[0] * 0.1),
-                                          height=int(original_geometry[1] * 0.05))
+        self.clients_listbox = tk.Listbox(clients_table_frame,
+                                          width=int(original_geometry[0] * self.listbox_proportion[0]),
+                                          height=int(original_geometry[1] * self.listbox_proportion[1]))
         self.clients_listbox.grid(row=1, column=0, columnspan=3, sticky=tk.N + tk.W)
         self.clients_listbox.bind('<Double-Button-1>', self.client_window)
         clients_list_buttons_frame = tk.Frame(self.clients_list_frame)
@@ -87,8 +89,10 @@ class GestionEspacioAbierto:
         groups_list_buttons_frame = tk.Frame(self.groups_list_frame)
         groups_list_buttons_frame.grid(row=0, column=0, sticky=tk.N + tk.E)
         self.list_buttons(groups_list_buttons_frame, gr.Group)
-        self.groups_listbox = tk.Listbox(groups_table_frame)
-        self.groups_listbox.grid()
+        self.groups_listbox = tk.Listbox(groups_table_frame,
+                                         width=int(original_geometry[0] * self.listbox_proportion[0]),
+                                         height=int(original_geometry[1] * self.listbox_proportion[1]))
+        self.groups_listbox.grid(row=1, column=0, columnspan=3, sticky=tk.N + tk.W)
         self.groups_listbox.bind('<Double-Button-1>', self.group_window)
 
         groups_list_nav_frame = tk.Frame(self.groups_list_frame, background='red')
@@ -111,25 +115,32 @@ class GestionEspacioAbierto:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_client)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(100, 10))
             modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_client)
-            modify_button.grid(row=1, column=0, sticky=tk.E, padx=(10, 10), pady=(0, 10))
+            modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_client)
+            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
-            export_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         elif type is gr.Group:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_group)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(100, 10))
             modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_group)
             modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_group)
+            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
-            export_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         else:
             new_button = tk.Button(parent_frame, text='Nuevo')
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(100, 10))
             modify_button = tk.Button(parent_frame, text='Modificar')
             modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button = tk.Button(parent_frame, text='Eliminar')
+            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar')
-            export_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         new_button.config(width=20)
         modify_button.config(width=20)
+        delete_button.config(width=20)
         export_button.config(width=20)
 
     def navigation_interface(self, parent_frame):
@@ -149,8 +160,10 @@ class GestionEspacioAbierto:
         if event.widget is self.root:
             w = event.width
             h = event.height
-            self.clients_listbox.config(width=int(w * 0.1), height=int(h * 0.05))
-            self.groups_listbox.config(width=int(w * 0.1), height=int(h * 0.05))
+            self.clients_listbox.config(width=int(w * self.listbox_proportion[0]),
+                                        height=int(h * self.listbox_proportion[1]))
+            self.groups_listbox.config(width=int(w * self.listbox_proportion[0]),
+                                       height=int(h * self.listbox_proportion[1]))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -193,15 +206,6 @@ class GestionEspacioAbierto:
                 self.clients_listbox_obj.append(client)
                 entry = ' '.join(str(client).split(';'))
                 self.clients_listbox.insert(tk.END, entry)
-                # if self.pa_chbox_var.get() is 1:
-                #     # header = format_clients()
-                #     header = ' '.join(cl.Patient.str_header)
-                #     self.clients_listbox.insert(tk.END, header)
-                #     for client in self.patients:
-                #         # entry = format_clients()
-                #         self.clients_listbox_obj.append(client)
-                #         entry = ' '.join(str(client).split(';'))
-                #         self.clients_listbox.insert(tk.END, entry)
 
     def groups_listbox_update(self):
         self.groups_listbox.delete(0, tk.END)
@@ -222,6 +226,7 @@ class GestionEspacioAbierto:
             popup_root = tk.Tk()
             popup = ClientUI(popup_root, client)
             popup_root.mainloop()
+            popup_root.destroy()
 
     def new_client(self):
         id_new_element = gr.available_id(self.clients + self.alumns)
@@ -229,26 +234,50 @@ class GestionEspacioAbierto:
         if self.cl_chbox_var.get() is 1:
             popup = ModifyClientUI(popup_root, cl.Client(), id_new_element)
         else:
-            popup = ModifyClientUI(popup_root, cl.Alumn(), id_new_element)
+            popup = ModifyClientUI(popup_root, cl.Alumn(), id_new_element, self.groups)
         popup_root.mainloop()
-        if type(popup.client) is cl.Client:
-            self.clients.append(popup.client)
-        if type(popup.client) is cl.Alumn:
-            self.alumns.append(popup.client)
+        popup_root.destroy()
+        if popup.new:
+            if type(popup.client) is cl.Client:
+                self.clients.append(popup.client)
+            if type(popup.client) is cl.Alumn:
+                self.alumns.append(popup.client)
+        self.clients_listbox_update()
 
     def modify_client(self):
+        if len(self.clients_listbox.curselection()) is 0:
+            return
         selected_index = self.clients_listbox.curselection()[0] - 1
         client = self.clients_listbox_obj[selected_index]
         popup_root = tk.Tk()
-        popup = ModifyClientUI(popup_root, client)
+        popup = ModifyClientUI(popup_root, client, None, self.groups)
         popup_root.mainloop()
         popup_root.destroy()
-        if type(client) is cl.Client:
-            self.clients.remove(client)
-            self.clients.append(popup.client)
-        elif type(client) is cl.Alumn:
-            self.alumns.remove(client)
-            self.alumns.append(popup.client)
+        if popup.new:
+            if type(client) is cl.Client:
+                self.clients.remove(client)
+                self.clients.append(popup.client)
+            elif type(client) is cl.Alumn:
+                self.alumns.remove(client)
+                self.alumns.append(popup.client)
+        self.clients_listbox_update()
+
+    def delete_client(self):
+        if len(self.clients_listbox.curselection()) is 0:
+            return
+        selected_index = self.clients_listbox.curselection()[0] - 1
+        client = self.clients_listbox_obj[selected_index]
+        popup_root = tk.Tk()
+        message = str(client)
+        popup = AreYouSureUI(popup_root, message)
+        popup_root.mainloop()
+        popup_root.destroy()
+        if popup.answer:
+            if type(client) is cl.Client:
+                self.clients.remove(client)
+            if type(client) is cl.Alumn:
+                self.alumns.remove(client)
+        self.clients_listbox_update()
 
     def groups_list_window(self):
         self.groups_list_frame.tkraise()
@@ -260,22 +289,43 @@ class GestionEspacioAbierto:
             popup_root = tk.Tk()
             popup = GroupUI(popup_root, group)
             popup_root.mainloop()
+            popup_root.destroy()
 
     def new_group(self):
         id_new_element = gr.available_id(self.groups)
         popup_root = tk.Tk()
         popup = ModifyGroupUI(popup_root, gr.Group(), id_new_element)
         popup_root.mainloop()
+        popup_root.destroy()
         self.groups.append(popup.group)
+        self.groups_listbox_update()
 
     def modify_group(self):
+        if len(self.groups_listbox.curselection()) is 0:
+            return
         selected_index = self.groups_listbox.curselection()
         group = self.groups_listbox.get(selected_index)
         popup_root = tk.Tk()
         popup = ModifyGroupUI(popup_root, group)
         popup_root.mainloop()
+        popup_root.destroy()
         self.groups.remove(group)
         self.groups.append(popup.group)
+        self.groups_listbox_update()
+
+    def delete_group(self):
+        if len(self.groups_listbox.curselection()) is 0:
+            return
+        selected_index = self.groups_listbox.curselection()[0] - 1
+        group = self.groups_listbox_obj[selected_index]
+        popup_root = tk.Tk()
+        message = str(group)
+        popup = AreYouSureUI(popup_root, message)
+        popup_root.mainloop()
+        popup_root.destroy()
+        if popup.answer:
+            self.groups.remove(group)
+        self.groups_listbox_update()
 
     def export_selection(self):
         pass
@@ -317,20 +367,20 @@ class ClientUI:
         client_id_field.grid(row=6, column=0, sticky=tk.N + tk.W)
 
         # FIELD VALUES
-        name_ans = tk.Label(self.popup_root, text=self.client.name)
-        name_ans.grid(row=0, column=1, sticky=tk.N + tk.W)
-        surname_ans = tk.Label(self.popup_root, text=self.client.surname)
-        surname_ans.grid(row=1, column=1, sticky=tk.N + tk.W)
-        id_card_ans = tk.Label(self.popup_root, text=self.client.id_card)
-        id_card_ans.grid(row=2, column=1, sticky=tk.N + tk.W)
-        phone1_ans = tk.Label(self.popup_root, text=self.client.phone1)
-        phone1_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
-        phone2_ans = tk.Label(self.popup_root, text=self.client.phone2)
-        phone2_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
-        email_ans = tk.Label(self.popup_root, text=self.client.email)
-        email_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
-        client_id_ans = tk.Label(self.popup_root, text=self.client.id)
-        client_id_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+        self.name_ans = tk.Label(self.popup_root, text=self.client.name)
+        self.name_ans.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.surname_ans = tk.Label(self.popup_root, text=self.client.surname)
+        self.surname_ans.grid(row=1, column=1, sticky=tk.N + tk.W)
+        self.id_card_ans = tk.Label(self.popup_root, text=self.client.id_card)
+        self.id_card_ans.grid(row=2, column=1, sticky=tk.N + tk.W)
+        self.phone1_ans = tk.Label(self.popup_root, text=self.client.phone1)
+        self.phone1_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
+        self.phone2_ans = tk.Label(self.popup_root, text=self.client.phone2)
+        self.phone2_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
+        self.email_ans = tk.Label(self.popup_root, text=self.client.email)
+        self.email_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
+        self.client_id_ans = tk.Label(self.popup_root, text=self.client.id)
+        self.client_id_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
@@ -346,7 +396,7 @@ class ClientUI:
             pay_period_field.grid(row=10, column=0, sticky=tk.N + tk.W)
 
             # FIELD VALUES
-            if client.pay_bank is True:
+            if client.pay_bank:
                 pay_bank = 'Si'
             else:
                 pay_bank = 'No'
@@ -358,19 +408,19 @@ class ClientUI:
                 pay_period = 'Anual'
             else:
                 pay_period = 'Desconocido'
-            pay_bank_ans = tk.Label(self.popup_root, text=pay_bank)
-            pay_bank_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
-            bank_acc_ans = tk.Label(self.popup_root, text=client.bank_acc)
-            bank_acc_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
-            pay_period_ans = tk.Label(self.popup_root, text=pay_period)
-            pay_period_ans.grid(row=10, column=1, sticky=tk.N + tk.W)
+            self.pay_bank_ans = tk.Label(self.popup_root, text=pay_bank)
+            self.pay_bank_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
+            self.bank_acc_ans = tk.Label(self.popup_root, text=client.bank_acc)
+            self.bank_acc_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
+            self.pay_period_ans = tk.Label(self.popup_root, text=pay_period)
+            self.pay_period_ans.grid(row=10, column=1, sticky=tk.N + tk.W)
 
     def close_window(self):
         self.popup_root.quit()
 
 
 class ModifyClientUI(ClientUI):
-    def __init__(self, popup_root, client, id=None):
+    def __init__(self, popup_root, client, new_id=None, available_groups=list()):
         super().__init__(popup_root, client)
         if client.name is '':
             self.popup_root.title('Nuevo Cliente')
@@ -378,47 +428,218 @@ class ModifyClientUI(ClientUI):
         str_original_geometry = map(str, original_geometry)
         self.popup_root.geometry('x'.join(str_original_geometry))
         self.client = client
+        self.new_id = new_id
+        self.available_groups = available_groups
+        self.new = False
         # NEW FIELD VALUES
-        name_new = tk.Entry(self.popup_root, text=self.client.name)
-        name_new.grid(row=0, column=2, sticky=tk.N + tk.W)
-        surname_new = tk.Entry(self.popup_root, text=self.client.surname)
-        surname_new.grid(row=1, column=2, sticky=tk.N + tk.W)
-        id_card_new = tk.Entry(self.popup_root, text=self.client.id_card)
-        id_card_new.grid(row=2, column=2, sticky=tk.N + tk.W)
-        phone1_new = tk.Entry(self.popup_root, text=self.client.phone1)
-        phone1_new.grid(row=3, column=2, sticky=tk.N + tk.W)
-        phone2_new = tk.Entry(self.popup_root, text=self.client.phone2)
-        phone2_new.grid(row=4, column=2, sticky=tk.N + tk.W)
-        email_new = tk.Entry(self.popup_root, text=self.client.email)
-        email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
-        client_id_ans = tk.Label(self.popup_root, text=id)
-        client_id_ans.grid(row=6, column=2, sticky=tk.N + tk.W)
+        self.name_new = tk.Entry(self.popup_root, text=self.client.name)
+        self.name_new.delete(0, tk.END)
+        self.name_new.insert(0, self.client.name)
+        self.name_new.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.surname_new = tk.Entry(self.popup_root, text=self.client.surname)
+        self.surname_new.delete(0, tk.END)
+        self.surname_new.insert(0, self.client.surname)
+        self.surname_new.grid(row=1, column=2, sticky=tk.N + tk.W)
+        self.id_card_new = tk.Entry(self.popup_root, text=self.client.id_card)
+        self.id_card_new.delete(0, tk.END)
+        self.id_card_new.insert(0, self.client.id_card)
+        self.id_card_new.grid(row=2, column=2, sticky=tk.N + tk.W)
+        self.phone1_new = tk.Entry(self.popup_root, text=self.client.phone1)
+        self.phone1_new.delete(0, tk.END)
+        self.phone1_new.insert(0, self.client.phone1)
+        self.phone1_new.grid(row=3, column=2, sticky=tk.N + tk.W)
+        self.phone2_new = tk.Entry(self.popup_root, text=self.client.phone2)
+        self.phone2_new.delete(0, tk.END)
+        self.phone2_new.insert(0, self.client.phone2)
+        self.phone2_new.grid(row=4, column=2, sticky=tk.N + tk.W)
+        self.email_new = tk.Entry(self.popup_root, text=self.client.email)
+        self.email_new.delete(0, tk.END)
+        self.email_new.insert(0, self.client.email)
+        self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
-            pay_bank_ans = tk.Checkbutton(self.popup_root)
-            pay_bank_ans.grid(row=8, column=2, sticky=tk.N + tk.W)
-            bank_acc_ans = tk.Entry(self.popup_root)
-            bank_acc_ans.grid(row=9, column=2, sticky=tk.N + tk.W)
-            pay_period_miniframe = tk.Frame(self.popup_root)
-            pay_period_miniframe.grid(row=10, column=2, sticky=tk.N + tk.W)
-            month_label = tk.Label(pay_period_miniframe, text='Mensual: ')
-            month_label.grid(row=0, column=1, sticky=tk.N + tk.E)
-            month_checkbox = tk.Checkbutton(pay_period_miniframe)
-            month_checkbox.grid(row=0, column=2, sticky=tk.N + tk.E)
-            trimonth_label = tk.Label(pay_period_miniframe, text='Trimestral:')
-            trimonth_label.grid(row=1, column=1, sticky=tk.N + tk.E)
-            trimonth_checkbox = tk.Checkbutton(pay_period_miniframe)
-            trimonth_checkbox.grid(row=1, column=2, sticky=tk.N + tk.E)
-            yearly_label = tk.Label(pay_period_miniframe, text='Anual: ')
-            yearly_label.grid(row=2, column=1, sticky=tk.N + tk.E)
-            yearly_checkbox = tk.Checkbutton(pay_period_miniframe)
-            yearly_checkbox.grid(row=2, column=2, sticky=tk.N + tk.E)
+            original_geometry = [900, 300]
+            str_original_geometry = map(str, original_geometry)
+            self.popup_root.geometry('x'.join(str_original_geometry))
+            self.pay_bank_new_var = tk.IntVar()
+            self.pay_bank_new = tk.Checkbutton(self.popup_root, text='No', variable=self.pay_bank_new_var,
+                                               command=lambda: self.press_pay_bank_ans())
+            if self.client.pay_bank:
+                self.pay_bank_new_var.set(1)
+                self.pay_bank_new.select()
+            else:
+                self.pay_bank_new_var.set(0)
+                self.pay_bank_new.deselect()
+            self.pay_bank_new.grid(row=8, column=2, sticky=tk.N + tk.W)
+            self.bank_acc_new = tk.Entry(self.popup_root)
+            self.bank_acc_new.delete(0, tk.END)
+            self.bank_acc_new.insert(0, self.client.bank_acc)
+            self.bank_acc_new.grid(row=9, column=2, sticky=tk.N + tk.W)
+            self.pay_period_miniframe = tk.Frame(self.popup_root)
+            self.pay_period_miniframe.grid(row=10, column=2, sticky=tk.N + tk.W)
+            self.month_var = tk.IntVar()
+            self.month_checkbox = tk.Checkbutton(self.pay_period_miniframe, text='Mensual ', variable=self.month_var,
+                                                 command=lambda: self.press_period_ans('Month'), onvalue=1, offvalue=0)
+            if self.client.pay_period is 0:
+                self.month_var.set(1)
+                self.month_checkbox.select()
+            else:
+                self.month_var.set(0)
+                self.month_checkbox.deselect()
+            self.month_checkbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+            self.trimonth_var = tk.IntVar()
+            self.trimonth_checkbox = tk.Checkbutton(self.pay_period_miniframe, text='Trimestral',
+                                                    variable=self.trimonth_var,
+                                                    command=lambda: self.press_period_ans('Trimonth'), onvalue=1,
+                                                    offvalue=0)
+            if self.client.pay_period is 1:
+                self.trimonth_var.set(1)
+                self.trimonth_checkbox.select()
+            else:
+                self.trimonth_var.set(0)
+                self.trimonth_checkbox.deselect()
+            self.trimonth_checkbox.grid(row=1, column=2, sticky=tk.N + tk.W)
+            self.year_var = tk.IntVar()
+            self.year_checkbox = tk.Checkbutton(self.pay_period_miniframe, text='Anual ', variable=self.year_var,
+                                                command=lambda: self.press_period_ans('Year'), onvalue=1, offvalue=0)
+            if self.client.pay_period is 2:
+                self.year_var.set(1)
+                self.year_checkbox.select()
+            else:
+                self.year_var.set(0)
+                self.year_checkbox.deselect()
+            self.year_checkbox.grid(row=2, column=2, sticky=tk.N + tk.W)
+
+            groups_frame = tk.Frame(self.popup_root,width=600)
+            groups_frame.grid(row=0, rowspan=20, column=3,columnspan=2, sticky=tk.N+tk.W+tk.E+tk.S, padx=(20,0))
+            titlegroups_label = tk.Label(groups_frame, text = 'Miembro de: ')
+            titlegroups_label.grid(sticky=tk.W)
+            self.groups_var = list()
+            self.groups_checkboxes = list()
+            self.groups_id_list = list()
+            for group in self.available_groups:
+                group_var = tk.IntVar()
+                group_checkbox = tk.Checkbutton(groups_frame, text=group.display(), variable=group_var,
+                                                command=self.press_group_checkbox)
+                group_checkbox.grid(sticky=tk.W,padx=(10,0))
+                if group.id in self.client.groups:
+                    group_var.set(1)
+                    group_checkbox.select()
+                else:
+                    group_var.set(0)
+                    group_checkbox.deselect()
+                self.groups_var.append(group_var)
+                self.groups_checkboxes.append(group_checkbox)
+                self.groups_id_list.append(group.id)
 
         save_button = tk.Button(self.popup_root, text='Guardar', command=self.check_save)
-        save_button.grid(row=20, column=0, columnspan=5, sticky=tk.S)
+        save_button.grid(row=15, column=0, columnspan=5, sticky=tk.S)
+
+    def press_group_checkbox(self, event):
+        pass
+
+    def press_pay_bank_ans(self):
+        if self.pay_bank_new_var.get() is 0:
+            self.pay_bank_new_var.set(1)
+            self.pay_bank_new.config(text='Si')
+        else:
+            self.pay_bank_new_var.set(0)
+            self.pay_bank_new.config(text='No')
+
+    def press_period_ans(self, invoker):
+        if invoker is 'Month':
+            self.month_var.set(1)
+            self.month_checkbox.select()
+            self.trimonth_var.set(0)
+            self.trimonth_checkbox.deselect()
+            self.year_var.set(0)
+            self.year_checkbox.deselect()
+        if invoker is 'Trimonth':
+            self.month_var.set(0)
+            self.month_checkbox.deselect()
+            self.trimonth_var.set(1)
+            self.trimonth_checkbox.select()
+            self.year_var.set(0)
+            self.year_checkbox.deselect()
+        if invoker is 'Year':
+            self.month_var.set(0)
+            self.month_checkbox.deselect()
+            self.trimonth_var.set(0)
+            self.trimonth_checkbox.deselect()
+            self.year_var.set(1)
+            self.year_checkbox.select()
 
     def check_save(self):
-        pass
+        if self.info_integrity():
+            self.client.name = self.name_new.get()
+            self.client.surname = self.surname_new.get()
+            self.client.id_card = self.id_card_new.get()
+            self.client.phone1 = self.phone1_new.get()
+            self.client.phone2 = self.phone2_new.get()
+            self.client.email = self.email_new.get()
+            if not self.new_id is None:
+                self.client.id = self.new_id
+            if type(self.client) is cl.Alumn:
+                self.client.pay_bank = bool(self.pay_bank_new_var.get())
+                self.client.bank_acc = self.bank_acc_new.get()
+                if self.month_var.get() is 1:
+                    self.client.pay_period = 0
+                elif self.trimonth_var.get() is 1:
+                    self.client.pay_period = 1
+                elif self.year_var.get() is 1:
+                    self.client.pay_period = 2
+                else:
+                    self.client.pay_period = -1
+
+            self.update_answers()
+            original_geometry = [300, 300]
+            str_original_geometry = map(str, original_geometry)
+            self.popup_root.geometry('x'.join(str_original_geometry))
+            self.new = True
+        else:
+            error_label = tk.Label(self.popup_root, text='Error al Guardar, revisa la informacion introducida.',
+                                   fg='red')
+            error_label.grid(row=19, column=0, columnspan=5, sticky=tk.S)
+
+    def update_answers(self):
+        self.name_ans.config(text=self.client.name)
+        self.surname_ans.config(text=self.client.surname)
+        self.id_card_ans.config(text=self.client.id_card)
+        self.phone1_ans.config(text=self.client.phone1)
+        self.phone2_ans.config(text=self.client.phone2)
+        self.email_ans.config(text=self.client.email)
+        self.client_id_ans.config(text=self.client.id)
+        if self.client is cl.Alumn:
+            if self.client.pay_bank:
+                pay_bank = 'Si'
+            else:
+                pay_bank = 'No'
+            if self.client.pay_period is 0:
+                pay_period = 'Mensual'
+            elif self.client.pay_period is 1:
+                pay_period = 'Trimestral'
+            elif self.client.pay_period is 2:
+                pay_period = 'Anual'
+            else:
+                pay_period = 'Desconocido'
+            self.pay_bank_ans.config(text=pay_bank)
+            self.bank_acc_ans.config(text=self.client.bank_acc)
+            self.pay_period_ans.config(text=pay_period)
+
+    def info_integrity(self):
+        info_integrity = True
+        info_integrity = info_integrity * self.check_semicolons()
+        return info_integrity
+
+    def check_semicolons(self):
+        no_semicolon = True
+        var_list = [self.name_new.get(), self.surname_new.get(), self.id_card_new.get(), self.phone1_new.get(),
+                    self.phone2_new.get(), self.email_new.get()]
+        if self.client is cl.Alumn:
+            var_list = var_list + [self.bank_acc_new.get()]
+        for var in var_list:
+            no_semicolon = no_semicolon and not (';' in var)
+        return no_semicolon
 
 
 class GroupUI:
@@ -471,6 +692,33 @@ class ModifyGroupUI(GroupUI):
     def __init__(self, root, group, id=None):
         super().__init__(root, group)
         self.group = group
+
+
+class AreYouSureUI:
+    def __init__(self, root, message):
+        self.root = root
+        original_geometry = [250, 50]
+        str_original_geometry = map(str, original_geometry)
+        self.root.geometry('x'.join(str_original_geometry))
+        self.root.title('¿Estas seguro de eliminar este elemento?')
+        sure_label = tk.Label(self.root, text='¿Estas seguro de eliminar este elemento?')
+        another_label = tk.Label(self.root, text='Esta accion es irreversible')
+        sure_label.grid(row=0, column=0, columnspan=2)
+        yes_button = tk.Button(self.root, text='SI', command=self.delete_it)
+        yes_button.grid(row=1, column=0)
+        yes_button.config(width=10)
+        no_button = tk.Button(self.root, text='NO', command=self.dont_delete_it)
+        no_button.grid(row=1, column=1)
+        no_button.config(width=10)
+        self.answer = False
+
+    def delete_it(self):
+        self.answer = True
+        self.root.quit()
+
+    def dont_delete_it(self):
+        self.answer = False
+        self.root.quit()
 
 
 if __name__ == '__main__':
