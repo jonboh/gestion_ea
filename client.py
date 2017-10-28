@@ -10,7 +10,7 @@ class Client:
         self.phone2 = phone2
         self.email = email
         if client_id is '':
-            self.id = None
+            self.id = -1
         else:
             self.id = int(client_id)
 
