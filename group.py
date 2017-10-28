@@ -21,6 +21,10 @@ class Group:
              str(self.price), str(self.limit_members), str(self.members), str(self.id)])
         return ret_string
 
+    def display(self):
+        disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
+        return disp_string
+
     def timetable_format(self):
         hour_start = int(self.time_start / 100)
         min_start = int(self.time_start - 100 * hour_start)
