@@ -227,7 +227,10 @@ class GestionEspacioAbierto:
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             self.popup_root = TkSecure()
-            popup = ClientUI(self.popup_root, client)
+            if type(client) is cl.Client:
+                popup = ClientUI(self.popup_root, client)
+            elif type(client) is cl.Alumn:
+                popup = ClientUI(self.popup_root, client, self.groups)
             self.popup_root.mainloop()
             self.popup_root.destroy()
 
@@ -360,7 +363,7 @@ class GestionEspacioAbierto:
 
 
 class ClientUI:
-    def __init__(self, popup_root, client):
+    def __init__(self, popup_root, client, available_groups = list()):
         self.popup_root = popup_root
         self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
         original_geometry = [200, 150]
@@ -368,6 +371,7 @@ class ClientUI:
         self.popup_root.geometry('x'.join(str_original_geometry))
         self.popup_root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.client = client
+        self.available_groups = available_groups
 
         # FIELDS
         name_field = tk.Label(self.popup_root, text='Nombre: ')
@@ -403,7 +407,7 @@ class ClientUI:
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
-            original_geometry = [200, 220]
+            original_geometry = [600, 220]
             str_original_geometry = map(str, original_geometry)
             self.popup_root.geometry('x'.join(str_original_geometry))
             # FIELDS
@@ -433,6 +437,23 @@ class ClientUI:
             self.bank_acc_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
             self.pay_period_ans = tk.Label(self.popup_root, text=pay_period)
             self.pay_period_ans.grid(row=10, column=1, sticky=tk.N + tk.W)
+
+            # Groups Labels
+            self.groups_frame_init()
+            titlegroups_label = tk.Label(self.groups_frame, text='Miembro de: ')
+            titlegroups_label.grid(sticky=tk.W)
+            for group in self.available_groups:
+                group_checkbox = tk.Checkbutton(self.groups_frame, text=group.display(),state=tk.DISABLED)
+                group_checkbox.grid(sticky=tk.W, padx=(10, 0))
+                if group.id in self.client.groups:
+                    group_checkbox.select()
+                else:
+                    group_checkbox.deselect()
+
+
+    def groups_frame_init(self):
+        self.groups_frame = tk.Frame(self.popup_root, width=600)
+        self.groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S, padx=(20, 0))
 
     def close_window(self):
         self.popup_root.quit()
@@ -481,14 +502,16 @@ class ModifyClientUI(ClientUI):
             str_original_geometry = map(str, original_geometry)
             self.popup_root.geometry('x'.join(str_original_geometry))
             self.pay_bank_new_var = tk.IntVar()
-            self.pay_bank_new = tk.Checkbutton(self.popup_root, text='No', variable=self.pay_bank_new_var,
+            self.pay_bank_new = tk.Checkbutton(self.popup_root, variable=self.pay_bank_new_var,
                                                command=lambda: self.press_pay_bank_ans())
             if self.client.pay_bank:
                 self.pay_bank_new_var.set(1)
                 self.pay_bank_new.select()
+                self.pay_bank_new.config(text='Si')
             else:
                 self.pay_bank_new_var.set(0)
                 self.pay_bank_new.deselect()
+                self.pay_bank_new.config(text='No')
             self.pay_bank_new.grid(row=8, column=2, sticky=tk.N + tk.W)
             self.bank_acc_new = tk.Entry(self.popup_root)
             self.bank_acc_new.delete(0, tk.END)
@@ -529,16 +552,16 @@ class ModifyClientUI(ClientUI):
                 self.year_checkbox.deselect()
             self.year_checkbox.grid(row=2, column=2, sticky=tk.N + tk.W)
 
-            groups_frame = tk.Frame(self.popup_root, width=600)
-            groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S, padx=(20, 0))
-            titlegroups_label = tk.Label(groups_frame, text='Miembro de: ')
+            self.groups_frame.destroy()
+            self.groups_frame_init()
+            titlegroups_label = tk.Label(self.groups_frame, text='Miembro de: ')
             titlegroups_label.grid(sticky=tk.W)
             self.groups_var = list()
             self.groups_checkboxes = list()
             self.groups_id_list = list()
             for group in self.available_groups:
                 group_var = tk.IntVar()
-                group_checkbox = tk.Checkbutton(groups_frame, text=group.display())
+                group_checkbox = tk.Checkbutton(self.groups_frame, text=group.display())
                 group_checkbox.bind('<Button-1>', self.press_group_checkbox)
                 group_checkbox.grid(sticky=tk.W, padx=(10, 0))
                 if group.id in self.client.groups:
@@ -561,10 +584,8 @@ class ModifyClientUI(ClientUI):
             if event.widget is checkbox:
                 if self.groups_var[counter].get() is 0:
                     self.groups_var[counter].set(1)
-                    # checkbox.select()
                 else:
                     self.groups_var[counter].set(0)
-                    # checkbox.deselect()
             counter = counter + 1
         a = 1
 
