@@ -21,6 +21,7 @@ class GestionEspacioAbierto:
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
         self.listbox_proportion = [0.125, 0.05]
+        self.popup_root = TkSecureNone()
 
         # LOADING WINDOW DECLARATION
         self.loading_frame = tk.Frame(self.root, background='green')
@@ -223,20 +224,24 @@ class GestionEspacioAbierto:
         selected_index = self.clients_listbox.curselection()[0] - 1  # -1 discounts the header
         if not selected_index is -1:
             client = self.clients_listbox_obj[selected_index]
-            popup_root = tk.Tk()
-            popup = ClientUI(popup_root, client)
-            popup_root.mainloop()
-            popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = ClientUI(self.popup_root, client)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
 
     def new_client(self):
         id_new_element = gr.available_id(self.clients + self.alumns)
-        popup_root = tk.Tk()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
         if self.cl_chbox_var.get() is 1:
-            popup = ModifyClientUI(popup_root, cl.Client(), id_new_element)
+            popup = ModifyClientUI(self.popup_root, cl.Client(), id_new_element)
         else:
-            popup = ModifyClientUI(popup_root, cl.Alumn(), id_new_element, self.groups)
-        popup_root.mainloop()
-        popup_root.destroy()
+            popup = ModifyClientUI(self.popup_root, cl.Alumn(), id_new_element, self.groups)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         if popup.new:
             if type(popup.client) is cl.Client:
                 self.clients.append(popup.client)
@@ -249,10 +254,12 @@ class GestionEspacioAbierto:
             return
         selected_index = self.clients_listbox.curselection()[0] - 1
         client = self.clients_listbox_obj[selected_index]
-        popup_root = tk.Tk()
-        popup = ModifyClientUI(popup_root, client, None, self.groups)
-        popup_root.mainloop()
-        popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
+        popup = ModifyClientUI(self.popup_root, client, None, self.groups)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         if popup.new:
             if type(client) is cl.Client:
                 self.clients.remove(client)
@@ -267,11 +274,15 @@ class GestionEspacioAbierto:
             return
         selected_index = self.clients_listbox.curselection()[0] - 1
         client = self.clients_listbox_obj[selected_index]
-        popup_root = tk.Tk()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
         message = str(client)
-        popup = AreYouSureUI(popup_root, message)
-        popup_root.mainloop()
-        popup_root.destroy()
+        popup = AreYouSureUI(self.popup_root, message)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         if popup.answer:
             if type(client) is cl.Client:
                 self.clients.remove(client)
@@ -286,17 +297,21 @@ class GestionEspacioAbierto:
         selected_index = self.groups_listbox.curselection()[0] - 1
         if not selected_index is -1:
             group = self.groups_listbox_obj[selected_index]
-            popup_root = tk.Tk()
-            popup = GroupUI(popup_root, group)
-            popup_root.mainloop()
-            popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = GroupUI(self.popup_root, group)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
 
     def new_group(self):
         id_new_element = gr.available_id(self.groups)
-        popup_root = tk.Tk()
-        popup = ModifyGroupUI(popup_root, gr.Group(), id_new_element)
-        popup_root.mainloop()
-        popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
+        popup = ModifyGroupUI(self.popup_root, gr.Group(), id_new_element)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         self.groups.append(popup.group)
         self.groups_listbox_update()
 
@@ -305,10 +320,12 @@ class GestionEspacioAbierto:
             return
         selected_index = self.groups_listbox.curselection()
         group = self.groups_listbox.get(selected_index)
-        popup_root = tk.Tk()
-        popup = ModifyGroupUI(popup_root, group)
-        popup_root.mainloop()
-        popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
+        popup = ModifyGroupUI(self.popup_root, group)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         self.groups.remove(group)
         self.groups.append(popup.group)
         self.groups_listbox_update()
@@ -318,11 +335,13 @@ class GestionEspacioAbierto:
             return
         selected_index = self.groups_listbox.curselection()[0] - 1
         group = self.groups_listbox_obj[selected_index]
-        popup_root = tk.Tk()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
         message = str(group)
-        popup = AreYouSureUI(popup_root, message)
-        popup_root.mainloop()
-        popup_root.destroy()
+        popup = AreYouSureUI(self.popup_root, message)
+        self.popup_root.mainloop()
+        self.popup_root.destroy()
         if popup.answer:
             self.groups.remove(group)
         self.groups_listbox_update()
@@ -697,18 +716,19 @@ class ModifyGroupUI(GroupUI):
 class AreYouSureUI:
     def __init__(self, root, message):
         self.root = root
-        original_geometry = [250, 50]
+        original_geometry = [250, 75]
         str_original_geometry = map(str, original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
         self.root.title('¿Estas seguro de eliminar este elemento?')
         sure_label = tk.Label(self.root, text='¿Estas seguro de eliminar este elemento?')
-        another_label = tk.Label(self.root, text='Esta accion es irreversible')
         sure_label.grid(row=0, column=0, columnspan=2)
+        another_label = tk.Label(self.root, text='Esta accion es irreversible', fg='red')
+        another_label.grid(row=1,column=0,columnspan=2)
         yes_button = tk.Button(self.root, text='SI', command=self.delete_it)
-        yes_button.grid(row=1, column=0)
+        yes_button.grid(row=2, column=0)
         yes_button.config(width=10)
         no_button = tk.Button(self.root, text='NO', command=self.dont_delete_it)
-        no_button.grid(row=1, column=1)
+        no_button.grid(row=2, column=1)
         no_button.config(width=10)
         self.answer = False
 
@@ -720,6 +740,20 @@ class AreYouSureUI:
         self.answer = False
         self.root.quit()
 
+
+class TkSecureNone():
+    def __init__(self):
+        self.isalive = False
+
+
+class TkSecure(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.isalive = True
+
+    def destroy(self):
+        super().destroy()
+        self.isalive = False
 
 if __name__ == '__main__':
     file_clients = 'clients.txt'
