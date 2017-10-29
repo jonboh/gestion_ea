@@ -477,7 +477,7 @@ class ModifyClientUI(ClientUI):
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
-            original_geometry = [900, 300]
+            original_geometry = [900, 320]
             str_original_geometry = map(str, original_geometry)
             self.popup_root.geometry('x'.join(str_original_geometry))
             self.pay_bank_new_var = tk.IntVar()
@@ -529,18 +529,18 @@ class ModifyClientUI(ClientUI):
                 self.year_checkbox.deselect()
             self.year_checkbox.grid(row=2, column=2, sticky=tk.N + tk.W)
 
-            groups_frame = tk.Frame(self.popup_root,width=600)
-            groups_frame.grid(row=0, rowspan=20, column=3,columnspan=2, sticky=tk.N+tk.W+tk.E+tk.S, padx=(20,0))
-            titlegroups_label = tk.Label(groups_frame, text = 'Miembro de: ')
+            groups_frame = tk.Frame(self.popup_root, width=600)
+            groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S, padx=(20, 0))
+            titlegroups_label = tk.Label(groups_frame, text='Miembro de: ')
             titlegroups_label.grid(sticky=tk.W)
             self.groups_var = list()
             self.groups_checkboxes = list()
             self.groups_id_list = list()
             for group in self.available_groups:
                 group_var = tk.IntVar()
-                group_checkbox = tk.Checkbutton(groups_frame, text=group.display(), variable=group_var,
-                                                command=self.press_group_checkbox)
-                group_checkbox.grid(sticky=tk.W,padx=(10,0))
+                group_checkbox = tk.Checkbutton(groups_frame, text=group.display())
+                group_checkbox.bind('<Button-1>', self.press_group_checkbox)
+                group_checkbox.grid(sticky=tk.W, padx=(10, 0))
                 if group.id in self.client.groups:
                     group_var.set(1)
                     group_checkbox.select()
@@ -552,10 +552,21 @@ class ModifyClientUI(ClientUI):
                 self.groups_id_list.append(group.id)
 
         save_button = tk.Button(self.popup_root, text='Guardar', command=self.check_save)
-        save_button.grid(row=15, column=0, columnspan=5, sticky=tk.S)
+        self.save_button_row = 15
+        save_button.grid(row=self.save_button_row, column=0, columnspan=5, sticky=tk.S)
 
     def press_group_checkbox(self, event):
-        pass
+        counter = 0
+        for checkbox in self.groups_checkboxes:
+            if event.widget is checkbox:
+                if self.groups_var[counter].get() is 0:
+                    self.groups_var[counter].set(1)
+                    # checkbox.select()
+                else:
+                    self.groups_var[counter].set(0)
+                    # checkbox.deselect()
+            counter = counter + 1
+        a = 1
 
     def press_pay_bank_ans(self):
         if self.pay_bank_new_var.get() is 0:
@@ -599,6 +610,12 @@ class ModifyClientUI(ClientUI):
             if not self.new_id is None:
                 self.client.id = self.new_id
             if type(self.client) is cl.Alumn:
+                counter = 0
+                self.client.groups = set()
+                for checkbox_var in self.groups_var:
+                    if checkbox_var.get() is 1:
+                        self.client.groups.add(self.groups_id_list[counter])
+                    counter = counter + 1
                 self.client.pay_bank = bool(self.pay_bank_new_var.get())
                 self.client.bank_acc = self.bank_acc_new.get()
                 if self.month_var.get() is 1:
@@ -611,14 +628,11 @@ class ModifyClientUI(ClientUI):
                     self.client.pay_period = -1
 
             self.update_answers()
-            original_geometry = [300, 300]
-            str_original_geometry = map(str, original_geometry)
-            self.popup_root.geometry('x'.join(str_original_geometry))
             self.new = True
         else:
             error_label = tk.Label(self.popup_root, text='Error al Guardar, revisa la informacion introducida.',
                                    fg='red')
-            error_label.grid(row=19, column=0, columnspan=5, sticky=tk.S)
+            error_label.grid(row=self.save_button_row - 1, column=0, columnspan=5, sticky=tk.S)
 
     def update_answers(self):
         self.name_ans.config(text=self.client.name)
@@ -628,7 +642,7 @@ class ModifyClientUI(ClientUI):
         self.phone2_ans.config(text=self.client.phone2)
         self.email_ans.config(text=self.client.email)
         self.client_id_ans.config(text=self.client.id)
-        if self.client is cl.Alumn:
+        if type(self.client) is cl.Alumn:
             if self.client.pay_bank:
                 pay_bank = 'Si'
             else:
@@ -723,7 +737,7 @@ class AreYouSureUI:
         sure_label = tk.Label(self.root, text='¿Estas seguro de eliminar este elemento?')
         sure_label.grid(row=0, column=0, columnspan=2)
         another_label = tk.Label(self.root, text='Esta accion es irreversible', fg='red')
-        another_label.grid(row=1,column=0,columnspan=2)
+        another_label.grid(row=1, column=0, columnspan=2)
         yes_button = tk.Button(self.root, text='SI', command=self.delete_it)
         yes_button.grid(row=2, column=0)
         yes_button.config(width=10)
@@ -754,6 +768,7 @@ class TkSecure(tk.Tk):
     def destroy(self):
         super().destroy()
         self.isalive = False
+
 
 if __name__ == '__main__':
     file_clients = 'clients.txt'
