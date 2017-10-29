@@ -77,6 +77,17 @@ class GestionEspacioAbierto:
         clients_list_nav_frame = tk.Frame(self.clients_list_frame, background='red')
         clients_list_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(clients_list_nav_frame)
+        # Sorters
+        clients_sorters_frame = tk.Frame(self.clients_list_frame)
+        clients_sorters_frame.grid(row=1,sticky=tk.W+tk.S)
+        clients_sort_label = tk.Label(clients_sorters_frame, text='Ordernar por: ')
+        clients_sort_label.grid(row=0,column=0,sticky=tk.N+tk.W)
+        self.cl_name_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Nombre')
+        self.cl_name_sort_chbox.grid(row=0,column=1,sticky=tk.N+tk.W)
+        self.cl_surname_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Apellidos')
+        self.cl_surname_sort_chbox.grid(row=0,column=2,sticky=tk.N+tk.W)
+        self.cl_inverse_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Invertir orden')
+        self.cl_inverse_sort_chbox.grid(row=1,column=1, sticky=tk.N+tk.W)
 
         # GROUPS WINDOW
         self.groups_list_frame = tk.Frame(self.root, background='yellow')
@@ -99,6 +110,17 @@ class GestionEspacioAbierto:
         groups_list_nav_frame = tk.Frame(self.groups_list_frame, background='red')
         groups_list_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(groups_list_nav_frame)
+        # Sorters
+        groups_sorters_frame = tk.Frame(self.groups_list_frame)
+        groups_sorters_frame.grid(row=1,sticky=tk.W + tk.S)
+        groups_sort_label = tk.Label(groups_sorters_frame, text='Ordernar por: ')
+        groups_sort_label.grid(row=0,column=0,sticky=tk.N+tk.W)
+        self.gr_activity_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Actividad')
+        self.gr_activity_sort_chbox.grid(row=0,column=1,sticky=tk.N+tk.W)
+        self.gr_teacher_sort_chbox = tk.Checkbutton(groups_sorters_frame,text='Monitor/a')
+        self.gr_teacher_sort_chbox.grid(row=0,column=2,sticky=tk.N+tk.W)
+        self.gr_inverse_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Invertir orden')
+        self.gr_inverse_sort_chbox.grid(row=1,column=1,sticky=tk.N+tk.W)
 
         # LOAD CLIENTS AND GROUPS
         self.loading_frame.tkraise()
@@ -208,7 +230,11 @@ class GestionEspacioAbierto:
                 entry = ' '.join(str(client).split(';'))
                 self.clients_listbox.insert(tk.END, entry)
 
+    def sort_clients(self):
+        pass
+
     def groups_listbox_update(self):
+        self.sort_groups()
         self.groups_listbox.delete(0, tk.END)
         self.groups_listbox_obj = list()
         # header = format_groups()
@@ -219,6 +245,9 @@ class GestionEspacioAbierto:
             self.groups_listbox_obj.append(group)
             entry = ' '.join(str(group).split(';'))
             self.groups_listbox.insert(tk.END, entry)
+
+    def sort_groups(self):
+        pass
 
     def client_window(self, event):
         selected_index = self.clients_listbox.curselection()[0] - 1  # -1 discounts the header
@@ -321,16 +350,17 @@ class GestionEspacioAbierto:
     def modify_group(self):
         if len(self.groups_listbox.curselection()) is 0:
             return
-        selected_index = self.groups_listbox.curselection()
-        group = self.groups_listbox.get(selected_index)
+        selected_index = self.groups_listbox.curselection()[0] - 1
+        group = self.groups_listbox_obj[selected_index]
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
         popup = ModifyGroupUI(self.popup_root, group)
         self.popup_root.mainloop()
         self.popup_root.destroy()
-        self.groups.remove(group)
-        self.groups.append(popup.group)
+        if popup.new:
+            self.groups.remove(group)
+            self.groups.append(popup.group)
         self.groups_listbox_update()
 
     def delete_group(self):
@@ -363,7 +393,7 @@ class GestionEspacioAbierto:
 
 
 class ClientUI:
-    def __init__(self, popup_root, client, available_groups = list()):
+    def __init__(self, popup_root, client, available_groups=list()):
         self.popup_root = popup_root
         self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
         original_geometry = [200, 150]
@@ -443,17 +473,17 @@ class ClientUI:
             titlegroups_label = tk.Label(self.groups_frame, text='Miembro de: ')
             titlegroups_label.grid(sticky=tk.W)
             for group in self.available_groups:
-                group_checkbox = tk.Checkbutton(self.groups_frame, text=group.display(),state=tk.DISABLED)
+                group_checkbox = tk.Checkbutton(self.groups_frame, text=group.display(), state=tk.DISABLED)
                 group_checkbox.grid(sticky=tk.W, padx=(10, 0))
                 if group.id in self.client.groups:
                     group_checkbox.select()
                 else:
                     group_checkbox.deselect()
 
-
     def groups_frame_init(self):
         self.groups_frame = tk.Frame(self.popup_root, width=600)
-        self.groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S, padx=(20, 0))
+        self.groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S,
+                               padx=(20, 0))
 
     def close_window(self):
         self.popup_root.quit()
@@ -704,6 +734,7 @@ class GroupUI:
         original_geometry = [650, 500]
         str_original_geometry = map(str, original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
+        self.root.protocol("WM_DELETE_WINDOW", self.close_window)
 
         # FIELDS
         name_activity_field = tk.Label(self.root, text='Actividad: ')
@@ -724,28 +755,221 @@ class GroupUI:
         group_id_field.grid(row=7, column=0, sticky=tk.N + tk.W)
 
         # FIELD VALUES
-        name_activity_ans = tk.Label(self.root, text=group.name_activity)
-        name_activity_ans.grid(row=0, column=1, sticky=tk.N + tk.W)
-        name_teacher_ans = tk.Label(self.root, text=group.name_teacher)
-        name_teacher_ans.grid(row=1, column=1, sticky=tk.N + tk.W)
-        days_ans = tk.Label(self.root, text=group.days_format())
-        days_ans.grid(row=2, column=1, sticky=tk.N + tk.W)
-        time_ans = tk.Label(self.root, text=group.timetable_format())
-        time_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
-        price_ans = tk.Label(self.root, text=str(group.price) + ' EUR')
-        price_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
-        members_number_ans = tk.Label(self.root, text=str(len(group.members)))
-        members_number_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
-        members_limit_ans = tk.Label(self.root, text=str(group.limit_members))
-        members_limit_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
-        group_id_ans = tk.Label(self.root, text=str(group.id))
-        group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
+        self.name_activity_ans = tk.Label(self.root, text=group.name_activity)
+        self.name_activity_ans.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.name_teacher_ans = tk.Label(self.root, text=group.name_teacher)
+        self.name_teacher_ans.grid(row=1, column=1, sticky=tk.N + tk.W)
+        self.days_ans = tk.Label(self.root, text=group.days_format())
+        self.days_ans.grid(row=2, column=1, sticky=tk.N + tk.W)
+        self.time_ans = tk.Label(self.root, text=group.timetable_format())
+        self.time_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
+        self.price_ans = tk.Label(self.root, text=str(group.price) + ' EUR')
+        self.price_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
+        self.members_number_ans = tk.Label(self.root, text=str(len(group.members)))
+        self.members_number_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
+        self.members_limit_ans = tk.Label(self.root, text=str(group.limit_members))
+        self.members_limit_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+        self.group_id_ans = tk.Label(self.root, text=str(group.id))
+        self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
 
+    def close_window(self):
+        self.root.quit()
 
 class ModifyGroupUI(GroupUI):
-    def __init__(self, root, group, id=None):
+    def __init__(self, root, group, new_id=None):
         super().__init__(root, group)
         self.group = group
+        self.new_id = new_id
+        self.new = False
+
+        # FIELD ENTRIES
+        self.name_activity_new = tk.Entry(self.root)
+        self.name_activity_new.delete(0, tk.END)
+        self.name_activity_new.insert(0, group.name_activity)
+        self.name_activity_new.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.name_teacher_new = tk.Entry(self.root)
+        self.name_teacher_new.delete(0, tk.END)
+        self.name_teacher_new.insert(0, group.name_teacher)
+        self.name_teacher_new.grid(row=1, column=2, sticky=tk.N + tk.W)
+        days_new_frame = tk.Frame(self.root)
+        days_new_frame.grid(row=2, column=2, sticky=tk.N + tk.W)
+        self.monday_var = tk.IntVar()
+        self.monday_checkbox = tk.Checkbutton(days_new_frame, variable=self.monday_var, text='Lunes',
+                                              command=lambda: self.press_days_checkbox('monday'))
+        self.monday_checkbox.grid(sticky=tk.W)
+        if 'L' in self.group.days:
+            self.monday_checkbox.select()
+            self.monday_var.set(1)
+        self.tuesday_var = tk.IntVar()
+        self.tuesday_checkbox = tk.Checkbutton(days_new_frame, variable=self.tuesday_var, text='Martes',
+                                               command=lambda: self.press_days_checkbox('tuesday'))
+        self.tuesday_checkbox.grid(sticky=tk.W)
+        if 'M' in self.group.days:
+            self.tuesday_checkbox.select()
+            self.tuesday_var.set(1)
+        self.wednesday_var = tk.IntVar()
+        self.wednesday_checkbox = tk.Checkbutton(days_new_frame, variable=self.wednesday_var, text='Miercoles',
+                                                 command=lambda: self.press_days_checkbox('wednesday'))
+        self.wednesday_checkbox.grid(sticky=tk.W)
+        if 'X' in self.group.days:
+            self.wednesday_checkbox.select()
+            self.wednesday_var.set(1)
+        self.thrusday_var = tk.IntVar()
+        self.thrusday_checkbox = tk.Checkbutton(days_new_frame, variable=self.thrusday_var, text='Jueves',
+                                                command=lambda: self.press_days_checkbox('thrusday'))
+        self.thrusday_checkbox.grid(sticky=tk.W)
+        if 'J' in self.group.days:
+            self.thrusday_checkbox.select()
+            self.thrusday_var.set(1)
+        self.friday_var = tk.IntVar()
+        self.friday_checkbox = tk.Checkbutton(days_new_frame, variable=self.friday_var, text='Viernes',
+                                              command=lambda: self.press_days_checkbox('friday'))
+        self.friday_checkbox.grid(sticky=tk.W)
+        if 'V' in self.group.days:
+            self.friday_checkbox.select()
+            self.friday_var.set(1)
+        self.saturday_var = tk.IntVar()
+        self.saturday_checkbox = tk.Checkbutton(days_new_frame, variable=self.saturday_var, text='Sabado',
+                                                command=lambda: self.press_days_checkbox('saturday'))
+        self.saturday_checkbox.grid(sticky=tk.W)
+        if 'S' in self.group.days:
+            self.saturday_checkbox.select()
+            self.saturday_var.set(1)
+        self.sunday_var = tk.IntVar()
+        self.sunday_checkbox = tk.Checkbutton(days_new_frame, variable=self.sunday_var, text='Domingo',
+                                              command=lambda: self.press_days_checkbox('sunday'))
+        self.sunday_checkbox.grid(sticky=tk.W)
+        if 'D' in self.group.days:
+            self.sunday_checkbox.select()
+            self.sunday_var.set(1)
+        time_new_frame = tk.Frame(self.root)
+        time_new_frame.grid(row=3, column=2, sticky=tk.N + tk.W)
+
+        start_hour = self.group.timetable_format()[0:2]
+        start_min = self.group.timetable_format()[3:5]
+        end_hour = self.group.timetable_format()[8:10]
+        end_min = self.group.timetable_format()[11:13]
+        self.time_start_hour_new = tk.Entry(time_new_frame, justify="right", width=3)
+        self.time_start_hour_new.delete(0, tk.END)
+        self.time_start_hour_new.insert(0, start_hour)
+        self.time_start_hour_new.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.time_start_min_new = tk.Entry(time_new_frame, width=3)
+        self.time_start_min_new.delete(0, tk.END)
+        self.time_start_min_new.insert(0, start_min)
+        self.time_start_min_new.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.time_end_hour_new = tk.Entry(time_new_frame, justify="right", width=3)
+        self.time_end_hour_new.delete(0, tk.END)
+        self.time_end_hour_new.insert(0, end_hour)
+        self.time_end_hour_new.grid(row=1, column=0, sticky=tk.N + tk.W)
+        self.time_end_min_new = tk.Entry(time_new_frame, width=3)
+        self.time_end_min_new.delete(0, tk.END)
+        self.time_end_min_new.insert(0, end_min)
+        self.time_end_min_new.grid(row=1, column=1, sticky=tk.N + tk.W)
+        self.price_new = tk.Entry(self.root)
+        self.price_new.delete(0, tk.END)
+        self.price_new.insert(0, str(group.price))
+        self.price_new.grid(row=4, column=2, sticky=tk.N + tk.W)
+        self.members_limit_new = tk.Entry(self.root)
+        self.members_limit_new.delete(0, tk.END)
+        self.members_limit_new.insert(0, str(group.limit_members))
+        self.members_limit_new.grid(row=6, column=2, sticky=tk.N + tk.W)
+
+        save_button = tk.Button(self.root, text='Guardar', command=self.check_save)
+        self.save_button_row = 15
+        save_button.grid(row=self.save_button_row, column=0, columnspan=5, sticky=tk.S)
+
+    def press_days_checkbox(self, invoker):
+        if invoker is 'monday':
+            if self.monday_var.get() is 0:
+                self.monday_var.set(1)
+            else:
+                self.monday_var.set(0)
+        if invoker is 'tuesday':
+            if self.tuesday_var.get() is 0:
+                self.tuesday_var.set(1)
+            else:
+                self.tuesday_var.set(0)
+        if invoker is 'wednesday':
+            if self.wednesday_var.get() is 0:
+                self.wednesday_var.set(1)
+            else:
+                self.wednesday_var.set(0)
+        if invoker is 'thrusday':
+            if self.thrusday_var.get() is 0:
+                self.thrusday_var.set(1)
+            else:
+                self.thrusday_var.set(0)
+        if invoker is 'friday':
+            if self.friday_var.get() is 0:
+                self.friday_var.set(1)
+            else:
+                self.friday_var.set(0)
+        if invoker is 'saturday':
+            if self.saturday_var.get() is 0:
+                self.saturday_var.set(1)
+            else:
+                self.saturday_var.set(0)
+        if invoker is 'sunday':
+            if self.sunday_var.get() is 0:
+                self.sunday_var.set(1)
+            else:
+                self.sunday_var.set(0)
+
+    def check_save(self):
+        if self.info_integrity():
+            self.group.name_activity = self.name_activity_new.get()
+            self.group.name_teacher = self.name_teacher_new.get()
+            self.group.days = set()
+            if self.monday_var.get() is 1:
+                self.group.days.add('L')
+            if self.tuesday_var.get() is 1:
+                self.group.days.add('M')
+            if self.wednesday_var.get() is 1:
+                self.group.days.add('X')
+            if self.thrusday_var.get() is 1:
+                self.group.days.add('J')
+            if self.friday_var.get() is 1:
+                self.group.days.add('V')
+            if self.saturday_var.get() is 1:
+                self.group.days.add('S')
+            if self.sunday_var.get() is 1:
+                self.group.days.add('D')
+            self.group.time_start = int(self.time_start_hour_new.get())*100+int(self.time_start_min_new.get())
+            self.group.time_end = int(self.time_end_hour_new.get())*100+int(self.time_end_min_new.get())
+            self.group.price = float(self.price_new.get())
+            self.group.limit_members = int(self.members_limit_new.get())
+            if not self.new_id is None: # We are modifying an existing group
+                self.group.id = self.new_id
+            self.update_answers()
+            self.new = True
+        else:
+            error_label = tk.Label(self.root, text='Error al Guardar, revisa la informacion introducida.',
+                                   fg='red')
+            error_label.grid(row=self.save_button_row - 1, column=0, columnspan=5, sticky=tk.S)
+
+    def update_answers(self):
+        self.name_activity_ans.config(text=self.group.name_activity)
+        self.name_teacher_ans.config(text=self.group.name_teacher)
+        self.days_ans.config(text=self.group.days_format())
+        self.time_ans.config(text=self.group.timetable_format())
+        self.price_ans.config(text=str(self.group.price) + ' EUR')
+        self.members_number_ans.config(text=str(len(self.group.members)))
+        self.members_limit_ans.config(text=str(self.group.limit_members))
+        self.group_id_ans.config(text=str(self.group.id))
+
+    def info_integrity(self):
+        info_integrity = True
+        info_integrity = info_integrity * self.check_semicolons()
+        return info_integrity
+
+    def check_semicolons(self):
+        no_semicolon = True
+        var_list = [self.name_activity_new.get(), self.name_teacher_new.get(), self.time_start_hour_new.get(),
+                    self.time_start_min_new.get(), self.time_end_hour_new.get(), self.time_end_min_new.get(),
+                    self.price_new.get(), self.members_limit_new.get()]
+        for var in var_list:
+            no_semicolon = no_semicolon and not (';' in var)
+        return no_semicolon
 
 
 class AreYouSureUI:
