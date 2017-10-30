@@ -45,6 +45,12 @@ class GestionEspacioAbierto:
         welcome_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(welcome_nav_frame)
 
+        # LOAD CLIENTS AND GROUPS
+        self.loading_frame.tkraise()
+        self.clients = io.load_clients(file_clients, cl.Client)
+        self.alumns = io.load_clients(file_alumns, cl.Alumn)
+        self.groups = io.load_groups(file_groups)
+
         # CLIENTS LIST WINDOW
         self.clients_list_frame = tk.Frame(self.root, background='blue')
         self.clients_list_frame.grid_rowconfigure(0, weight=1)
@@ -79,15 +85,27 @@ class GestionEspacioAbierto:
         self.navigation_interface(clients_list_nav_frame)
         # Sorters
         clients_sorters_frame = tk.Frame(self.clients_list_frame)
-        clients_sorters_frame.grid(row=1,sticky=tk.W+tk.S)
+        clients_sorters_frame.grid(row=1, sticky=tk.W + tk.S)
         clients_sort_label = tk.Label(clients_sorters_frame, text='Ordernar por: ')
-        clients_sort_label.grid(row=0,column=0,sticky=tk.N+tk.W)
-        self.cl_name_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Nombre')
-        self.cl_name_sort_chbox.grid(row=0,column=1,sticky=tk.N+tk.W)
-        self.cl_surname_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Apellidos')
-        self.cl_surname_sort_chbox.grid(row=0,column=2,sticky=tk.N+tk.W)
-        self.cl_inverse_sort_chbox = tk.Checkbutton(clients_sorters_frame,text='Invertir orden')
-        self.cl_inverse_sort_chbox.grid(row=1,column=1, sticky=tk.N+tk.W)
+        clients_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.cl_name_sort_var = tk.IntVar()
+
+        self.cl_name_sort_chbox = tk.Checkbutton(clients_sorters_frame, text='Nombre',
+                                                 command=lambda: self.sort_clients_event('name'))
+        self.cl_name_sort_var.set(1)
+        self.cl_name_sort_chbox.select()
+        # self.cl_name_sort_chbox.bind('<Button-1>', self.sort_clients_event)
+        self.cl_name_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.cl_surname_sort_var = tk.IntVar()
+        self.cl_surname_sort_chbox = tk.Checkbutton(clients_sorters_frame, text='Apellidos',
+                                                    command=lambda: self.sort_clients_event('surname'))
+        # self.cl_surname_sort_chbox.bind('<Button-1>', self.sort_clients_event)
+        self.cl_surname_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.cl_inverse_sort_var = tk.IntVar()
+        self.cl_inverse_sort_chbox = tk.Checkbutton(clients_sorters_frame, text='Invertir orden',
+                                                    command=lambda: self.sort_clients_event('inverse'))
+        # self.cl_inverse_sort_chbox.bind('<Button-1>', self.sort_clients_event)
+        self.cl_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
         # GROUPS WINDOW
         self.groups_list_frame = tk.Frame(self.root, background='yellow')
@@ -112,26 +130,32 @@ class GestionEspacioAbierto:
         self.navigation_interface(groups_list_nav_frame)
         # Sorters
         groups_sorters_frame = tk.Frame(self.groups_list_frame)
-        groups_sorters_frame.grid(row=1,sticky=tk.W + tk.S)
+        groups_sorters_frame.grid(row=1, sticky=tk.W + tk.S)
         groups_sort_label = tk.Label(groups_sorters_frame, text='Ordernar por: ')
-        groups_sort_label.grid(row=0,column=0,sticky=tk.N+tk.W)
-        self.gr_activity_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Actividad')
-        self.gr_activity_sort_chbox.grid(row=0,column=1,sticky=tk.N+tk.W)
-        self.gr_teacher_sort_chbox = tk.Checkbutton(groups_sorters_frame,text='Monitor/a')
-        self.gr_teacher_sort_chbox.grid(row=0,column=2,sticky=tk.N+tk.W)
-        self.gr_inverse_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Invertir orden')
-        self.gr_inverse_sort_chbox.grid(row=1,column=1,sticky=tk.N+tk.W)
-
-        # LOAD CLIENTS AND GROUPS
-        self.loading_frame.tkraise()
-        self.clients = io.load_clients(file_clients, cl.Client)
-        self.alumns = io.load_clients(file_alumns, cl.Alumn)
-        self.groups = io.load_groups(file_groups)
-        self.welcome_frame.tkraise()
+        groups_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.gr_activity_sort_var = tk.IntVar()
+        self.gr_activity_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Actividad',
+                                                     command=lambda: self.sort_groups_event('activity'))
+        self.gr_activity_sort_var.set(1)
+        self.gr_activity_sort_chbox.select()
+        # self.gr_activity_sort_chbox.bind('<Button-1>', self.sort_groups_event)
+        self.gr_activity_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.gr_teacher_sort_var = tk.IntVar()
+        self.gr_teacher_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Monitor/a',
+                                                    command=lambda: self.sort_groups_event('teacher'))
+        # self.gr_teacher_sort_chbox.bind('<Button-1>', self.sort_groups_event)
+        self.gr_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.gr_inverse_sort_var = tk.IntVar()
+        self.gr_inverse_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Invertir orden',
+                                                    command=lambda: self.sort_groups_event('inverse'))
+        # self.gr_inverse_sort_chbox.bind('<Button-1>', self.sort_groups_event)
+        self.gr_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
         # UPDATE CLIENTS AND GROUPS LISTBOXES
         self.clients_listbox_update()
         self.groups_listbox_update()
+
+        self.welcome_frame.tkraise()
 
     def list_buttons(self, parent_frame, type):
         if type is cl.Client:
@@ -209,6 +233,7 @@ class GestionEspacioAbierto:
             self.clients_listbox_update()
 
     def clients_listbox_update(self, ):
+        self.sort_clients()
         self.clients_listbox.delete(0, tk.END)
         self.clients_listbox_obj = list()
         if self.cl_chbox_var.get() is 1:
@@ -231,7 +256,60 @@ class GestionEspacioAbierto:
                 self.clients_listbox.insert(tk.END, entry)
 
     def sort_clients(self):
-        pass
+        def normal_name_sort(clients):
+            clients.sort(key=lambda client: (client.name, client.surname))
+
+        def inverse_name_sort(clients):
+            clients.sort(key=lambda client: (client.name, client.surname))
+            clients.reverse()
+
+        def normal_surname_sort(clients):
+            clients.sort(key=lambda client: (client.surname, client.name))
+
+        def inverse_surname_sort(clients):
+            clients.sort(key=lambda client: (client.surname, client.name))
+            clients.reverse()
+
+        def read_widgets(clients):
+            if self.cl_inverse_sort_var.get() is 0:
+                if self.cl_name_sort_var.get() is 1:
+                    normal_name_sort(clients)
+                elif self.cl_surname_sort_var.get() is 1:
+                    normal_surname_sort(clients)
+            else:
+                if self.cl_name_sort_var.get() is 1:
+                    inverse_name_sort(clients)
+                elif self.cl_surname_sort_var.get() is 1:
+                    inverse_surname_sort(clients)
+
+        if self.cl_chbox_var.get() is 1:
+            read_widgets(self.clients)
+        if self.al_chbox_var.get() is 1:
+            read_widgets(self.alumns)
+
+    def sort_clients_event(self, invoker):
+        def write_widget():
+            if invoker is 'name':
+                self.cl_name_sort_var.set(1)
+                self.cl_name_sort_chbox.select()
+                self.cl_surname_sort_var.set(0)
+                self.cl_surname_sort_chbox.deselect()
+            elif invoker is 'surname':
+                self.cl_surname_sort_var.set(1)
+                self.cl_surname_sort_chbox.select()
+                self.cl_name_sort_var.set(0)
+                self.cl_name_sort_chbox.deselect()
+            elif invoker is 'inverse':
+                if self.cl_inverse_sort_var.get() is 1:
+                    self.cl_inverse_sort_var.set(0)
+                    self.cl_inverse_sort_chbox.deselect()
+                else:
+                    self.cl_inverse_sort_var.set(1)
+                    self.cl_inverse_sort_chbox.select()
+
+        write_widget()
+        self.sort_clients()
+        self.clients_listbox_update()
 
     def groups_listbox_update(self):
         self.sort_groups()
@@ -247,7 +325,54 @@ class GestionEspacioAbierto:
             self.groups_listbox.insert(tk.END, entry)
 
     def sort_groups(self):
-        pass
+        def normal_activity_sort(groups):
+            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+
+        def inverse_activity_sort(groups):
+            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+            groups.reverse()
+
+        def normal_teacher_sort(groups):
+            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+
+        def inverse_teacher_sort(groups):
+            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+            groups.reverse()
+
+        if self.gr_inverse_sort_var.get() is 0:
+            if self.gr_activity_sort_var.get() is 1:
+                normal_activity_sort(self.groups)
+            elif self.gr_teacher_sort_var.get() is 1:
+                normal_teacher_sort(self.groups)
+        else:
+            if self.gr_activity_sort_var.get() is 1:
+                inverse_activity_sort(self.groups)
+            elif self.gr_teacher_sort_var.get() is 1:
+                inverse_teacher_sort(self.groups)
+
+    def sort_groups_event(self, invoker):
+        def widget_logic():
+            if invoker is 'activity':
+                self.gr_activity_sort_var.set(1)
+                self.gr_activity_sort_chbox.select()
+                self.gr_teacher_sort_var.set(0)
+                self.gr_teacher_sort_chbox.deselect()
+            elif invoker is 'teacher':
+                self.gr_teacher_sort_var.set(1)
+                self.gr_teacher_sort_chbox.select()
+                self.gr_activity_sort_var.set(0)
+                self.gr_activity_sort_chbox.deselect()
+            elif invoker is 'inverse':
+                if self.gr_inverse_sort_var.get() is 1:
+                    self.gr_inverse_sort_var.set(0)
+                    self.gr_inverse_sort_chbox.deselect()
+                else:
+                    self.gr_inverse_sort_var.set(1)
+                    self.gr_inverse_sort_chbox.select()
+
+        widget_logic()
+        self.sort_groups()
+        self.groups_listbox_update()
 
     def client_window(self, event):
         selected_index = self.clients_listbox.curselection()[0] - 1  # -1 discounts the header
@@ -775,6 +900,7 @@ class GroupUI:
     def close_window(self):
         self.root.quit()
 
+
 class ModifyGroupUI(GroupUI):
     def __init__(self, root, group, new_id=None):
         super().__init__(root, group)
@@ -934,11 +1060,11 @@ class ModifyGroupUI(GroupUI):
                 self.group.days.add('S')
             if self.sunday_var.get() is 1:
                 self.group.days.add('D')
-            self.group.time_start = int(self.time_start_hour_new.get())*100+int(self.time_start_min_new.get())
-            self.group.time_end = int(self.time_end_hour_new.get())*100+int(self.time_end_min_new.get())
+            self.group.time_start = int(self.time_start_hour_new.get()) * 100 + int(self.time_start_min_new.get())
+            self.group.time_end = int(self.time_end_hour_new.get()) * 100 + int(self.time_end_min_new.get())
             self.group.price = float(self.price_new.get())
             self.group.limit_members = int(self.members_limit_new.get())
-            if not self.new_id is None: # We are modifying an existing group
+            if not self.new_id is None:  # We are modifying an existing group
                 self.group.id = self.new_id
             self.update_answers()
             self.new = True
