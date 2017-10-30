@@ -2,17 +2,23 @@ class Group:
     str_header = ['Actividad', 'Monitor/a', 'Dias', 'Inicio', 'Final', 'Precio', 'Limite de Miembros', 'Miembros',
                   'ID Grupo']
 
-    def __init__(self, name_activity='', name_teacher='', days='', time_start='', time_end='', price='',
-                 limit_members='', members='{}',
-                 group_id=''):
+    def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00', price='0.0',
+                 limit_members='0', members='{}',
+                 group_id='-1'):
         self.name_activity = name_activity
         self.name_teacher = name_teacher
-        self.days = eval(days)
+        if days is '{}':
+            self.days = set()
+        else:
+            self.days = eval(days)
         self.time_start = int(time_start)
         self.time_end = int(time_end)
         self.price = float(price)
         self.limit_members = int(limit_members)
-        self.members = eval(members)  # set
+        if days is '{}':
+            self.members = set()
+        else:
+            self.members = eval(members)  # set
         self.id = int(group_id)
 
     def __str__(self):
@@ -31,11 +37,18 @@ class Group:
         hour_end = int(self.time_end / 100)
         min_end = int(self.time_end - 100 * hour_end)
 
-        time_str = str(hour_start) + ':'
-        if min_start < 10:
-            time_str = time_str + '0' + str(min_start) + ' - ' + str(hour_end) + ':'
+        if hour_start < 10:
+            time_str = '0' + str(hour_start) + ':'
         else:
-            time_str = time_str + str(min_start) + ' - ' + str(hour_end) + ':'
+            time_str = str(hour_start) + ':'
+        if min_start < 10:
+            time_str = time_str + '0' + str(min_start) + ' - '
+        else:
+            time_str = time_str + str(min_start) + ' - '
+        if hour_end < 10:
+            time_str = time_str + '0' + str(hour_end) + ':'
+        else:
+            time_str = time_str + str(hour_end) + ':'
         if min_end < 10:
             time_str = time_str + '0' + str(min_end)
         else:
