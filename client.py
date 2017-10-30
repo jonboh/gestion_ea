@@ -30,7 +30,10 @@ class Alumn(Client):
         self.pay_bank = bool(eval(pay_bank))
         self.bank_acc = bank_acc
         self.pay_period = int(pay_period)
-        self.groups = eval(groups)  # set
+        if type(eval(groups)) is dict:
+            self.groups = set()
+        else:
+            self.groups = eval(groups)  # set
 
     def __str__(self):
         ret_string = ';'.join([super().__str__(), str(self.pay_bank), self.bank_acc, str(self.pay_period), str(self.groups)])
