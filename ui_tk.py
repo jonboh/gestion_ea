@@ -1,8 +1,6 @@
 import tkinter as tk
-from pandastable import Table
-import ctypes
-import time
-import threading as th
+import tkinter.font as tkFont
+import tkinter.ttk as ttk
 
 import data_io as io
 import client as cl
@@ -52,39 +50,47 @@ class GestionEspacioAbierto:
         self.groups = io.load_groups(file_groups)
 
         # CLIENTS LIST WINDOW
-        self.clients_list_frame = tk.Frame(self.root, background='blue')
-        self.clients_list_frame.grid_rowconfigure(0, weight=1)
-        self.clients_list_frame.grid_columnconfigure(0, weight=1)
-        self.clients_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        clients_table_frame = tk.Frame(self.clients_list_frame, background='black')
+        self.clients_frame = tk.Frame(self.root, background='blue')
+        self.clients_frame.grid_rowconfigure(0, weight=1)
+        self.clients_frame.grid_columnconfigure(0, weight=1)
+        self.clients_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        clients_table_frame = tk.Frame(self.clients_frame, background='black')
         clients_table_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         clients_table_label = tk.Label(clients_table_frame, text='Clientes: ', font=("Helvetica", 14))
         clients_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        clients_buttons_frame = tk.Frame(clients_table_frame)
+        clients_buttons_frame.grid(row=0,column=2,sticky=tk.N+tk.W)
         self.cl_chbox_var = tk.IntVar()
         self.cl_chbox_var.set(1)
-        self.clients_checkbox = tk.Checkbutton(clients_table_frame, text='Clientes', font=("Helvetica", 10),
+        self.clients_checkbox = tk.Checkbutton(clients_buttons_frame, text='Clientes', font=("Helvetica", 10),
                                                variable=self.cl_chbox_var,
                                                command=lambda: self.clients_checkbox_update('Clients'))
         self.clients_checkbox.grid(row=0, column=1, sticky=tk.N + tk.E)
         self.al_chbox_var = tk.IntVar()
         self.al_chbox_var.set(0)
-        self.alumns_checkbox = tk.Checkbutton(clients_table_frame, text='Alumnos', font=("Helvetica", 10),
+        self.alumns_checkbox = tk.Checkbutton(clients_buttons_frame, text='Alumnos', font=("Helvetica", 10),
                                               variable=self.al_chbox_var,
                                               command=lambda: self.clients_checkbox_update('Alumns'))
         self.alumns_checkbox.grid(row=0, column=2, sticky=tk.N + tk.E)
+        self.al_chbox_bank_var = tk.IntVar()
+        self.al_chbox_bank_var.set(0)
+        self.alumns_checkbox_bank = tk.Checkbutton(clients_buttons_frame, text='Solo Domiciliados', font=("Helvetica", 10),
+                                              variable=self.al_chbox_bank_var,
+                                              command=lambda: self.clients_checkbox_update('bank'))
+        self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.E)
         self.clients_listbox = tk.Listbox(clients_table_frame,
                                           width=int(original_geometry[0] * self.listbox_proportion[0]),
                                           height=int(original_geometry[1] * self.listbox_proportion[1]))
         self.clients_listbox.grid(row=1, column=0, columnspan=3, sticky=tk.N + tk.W)
         self.clients_listbox.bind('<Double-Button-1>', self.client_window)
-        clients_list_buttons_frame = tk.Frame(self.clients_list_frame)
+        clients_list_buttons_frame = tk.Frame(self.clients_frame)
         clients_list_buttons_frame.grid(row=0, column=0, sticky=tk.N + tk.E)
         self.list_buttons(clients_list_buttons_frame, cl.Client)
-        clients_list_nav_frame = tk.Frame(self.clients_list_frame, background='red')
+        clients_list_nav_frame = tk.Frame(self.clients_frame, background='red')
         clients_list_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(clients_list_nav_frame)
         # Sorters
-        clients_sorters_frame = tk.Frame(self.clients_list_frame)
+        clients_sorters_frame = tk.Frame(self.clients_frame)
         clients_sorters_frame.grid(row=1, sticky=tk.W + tk.S)
         clients_sort_label = tk.Label(clients_sorters_frame, text='Ordernar por: ')
         clients_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
@@ -108,15 +114,15 @@ class GestionEspacioAbierto:
         self.cl_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
         # GROUPS WINDOW
-        self.groups_list_frame = tk.Frame(self.root, background='yellow')
-        self.groups_list_frame.grid_rowconfigure(0, weight=1)
-        self.groups_list_frame.grid_columnconfigure(0, weight=1)
-        self.groups_list_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        groups_table_frame = tk.Frame(self.groups_list_frame, background='black')
+        self.groups_frame = tk.Frame(self.root, background='yellow')
+        self.groups_frame.grid_rowconfigure(0, weight=1)
+        self.groups_frame.grid_columnconfigure(0, weight=1)
+        self.groups_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        groups_table_frame = tk.Frame(self.groups_frame, background='black')
         groups_table_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         groups_table_label = tk.Label(groups_table_frame, text='Grupos: ', font=("Helvetica", 14))
         groups_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
-        groups_list_buttons_frame = tk.Frame(self.groups_list_frame)
+        groups_list_buttons_frame = tk.Frame(self.groups_frame)
         groups_list_buttons_frame.grid(row=0, column=0, sticky=tk.N + tk.E)
         self.list_buttons(groups_list_buttons_frame, gr.Group)
         self.groups_listbox = tk.Listbox(groups_table_frame,
@@ -125,11 +131,11 @@ class GestionEspacioAbierto:
         self.groups_listbox.grid(row=1, column=0, columnspan=3, sticky=tk.N + tk.W)
         self.groups_listbox.bind('<Double-Button-1>', self.group_window)
 
-        groups_list_nav_frame = tk.Frame(self.groups_list_frame, background='red')
+        groups_list_nav_frame = tk.Frame(self.groups_frame, background='red')
         groups_list_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(groups_list_nav_frame)
         # Sorters
-        groups_sorters_frame = tk.Frame(self.groups_list_frame)
+        groups_sorters_frame = tk.Frame(self.groups_frame)
         groups_sorters_frame.grid(row=1, sticky=tk.W + tk.S)
         groups_sort_label = tk.Label(groups_sorters_frame, text='Ordernar por: ')
         groups_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
@@ -189,6 +195,7 @@ class GestionEspacioAbierto:
         modify_button.config(width=20)
         delete_button.config(width=20)
         export_button.config(width=20)
+        export_button.config(state=tk.DISABLED)
 
     def navigation_interface(self, parent_frame):
         save_button = tk.Button(parent_frame, command=self.save_all_info, text='Guardar', width=10)
@@ -219,18 +226,23 @@ class GestionEspacioAbierto:
         self.welcome_frame.tkraise()
 
     def clients_list_window(self):
-        self.clients_list_frame.tkraise()
+        self.clients_frame.tkraise()
 
     def clients_checkbox_update(self, invoker):
         """invoker: 'Clients' or 'Alumns'"""
         if invoker is 'Clients':
             self.cl_chbox_var.set(1)
             self.al_chbox_var.set(0)
+            self.al_chbox_bank_var.set(0)
             self.clients_listbox_update()
         if invoker is 'Alumns':
             self.cl_chbox_var.set(0)
             self.al_chbox_var.set(1)
             self.clients_listbox_update()
+        if invoker is 'bank':
+            self.cl_chbox_var.set(0)
+            self.al_chbox_var.set(1)
+        self.clients_listbox_update()
 
     def clients_listbox_update(self, ):
         self.sort_clients()
@@ -251,9 +263,15 @@ class GestionEspacioAbierto:
             self.clients_listbox.insert(tk.END, header)
             for client in self.alumns:
                 # entry = format_clients()
-                self.clients_listbox_obj.append(client)
-                entry = ' '.join(str(client).split(';'))
-                self.clients_listbox.insert(tk.END, entry)
+                if self.al_chbox_bank_var.get():
+                    if client.pay_bank:
+                        self.clients_listbox_obj.append(client)
+                        entry = ' '.join(str(client).split(';'))
+                        self.clients_listbox.insert(tk.END, entry)
+                else:
+                    self.clients_listbox_obj.append(client)
+                    entry = ' '.join(str(client).split(';'))
+                    self.clients_listbox.insert(tk.END, entry)
 
     def sort_clients(self):
         def normal_name_sort(clients):
@@ -394,7 +412,7 @@ class GestionEspacioAbierto:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
         if self.cl_chbox_var.get() is 1:
-            popup = ModifyClientUI(self.popup_root, cl.Client(), id_new_element)
+            popup = ModifyClientUI(self.popup_root, cl.Client(), id_new_element, self.groups)
         else:
             popup = ModifyClientUI(self.popup_root, cl.Alumn(), id_new_element, self.groups)
         self.popup_root.mainloop()
@@ -405,6 +423,7 @@ class GestionEspacioAbierto:
             if type(popup.client) is cl.Alumn:
                 self.alumns.append(popup.client)
         self.clients_listbox_update()
+        self.groups_listbox_update()
 
     def modify_client(self):
         if len(self.clients_listbox.curselection()) is 0:
@@ -425,6 +444,7 @@ class GestionEspacioAbierto:
                 self.alumns.remove(client)
                 self.alumns.append(popup.client)
         self.clients_listbox_update()
+        self.groups_listbox_update()
 
     def delete_client(self):
         if len(self.clients_listbox.curselection()) is 0:
@@ -445,10 +465,17 @@ class GestionEspacioAbierto:
                 self.clients.remove(client)
             if type(client) is cl.Alumn:
                 self.alumns.remove(client)
+            self.purge_member_from_groups(client)
         self.clients_listbox_update()
+        self.groups_listbox_update()
+
+    def purge_member_from_groups(self, client):
+        for group in self.groups:
+            if client.id in group.members:
+                group.members.remove(client.id)
 
     def groups_list_window(self):
-        self.groups_list_frame.tkraise()
+        self.groups_frame.tkraise()
 
     def group_window(self, event):
         selected_index = self.groups_listbox.curselection()[0] - 1
@@ -457,7 +484,7 @@ class GestionEspacioAbierto:
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             self.popup_root = TkSecure()
-            popup = GroupUI(self.popup_root, group)
+            popup = GroupUI(self.popup_root, group, self.alumns)
             self.popup_root.mainloop()
             self.popup_root.destroy()
 
@@ -469,8 +496,10 @@ class GestionEspacioAbierto:
         popup = ModifyGroupUI(self.popup_root, gr.Group(), id_new_element)
         self.popup_root.mainloop()
         self.popup_root.destroy()
-        self.groups.append(popup.group)
+        if popup.new:
+            self.groups.append(popup.group)
         self.groups_listbox_update()
+        self.clients_listbox_update()
 
     def modify_group(self):
         if len(self.groups_listbox.curselection()) is 0:
@@ -480,7 +509,7 @@ class GestionEspacioAbierto:
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
-        popup = ModifyGroupUI(self.popup_root, group)
+        popup = ModifyGroupUI(self.popup_root, group, None, self.alumns)
         self.popup_root.mainloop()
         self.popup_root.destroy()
         if popup.new:
@@ -502,7 +531,14 @@ class GestionEspacioAbierto:
         self.popup_root.destroy()
         if popup.answer:
             self.groups.remove(group)
+            self.purge_group_from_alumns(group)
         self.groups_listbox_update()
+        self.clients_listbox_update()
+
+    def purge_group_from_alumns(self, group):
+        for client in self.alumns:
+            if group.id in client.groups:
+                client.groups.remove(group.id)
 
     def export_selection(self):
         pass
@@ -787,10 +823,13 @@ class ModifyClientUI(ClientUI):
                 self.client.id = self.new_id
             if type(self.client) is cl.Alumn:
                 counter = 0
-                self.client.groups = set()
                 for checkbox_var in self.groups_var:
                     if checkbox_var.get() is 1:
                         self.client.groups.add(self.groups_id_list[counter])
+                        self.update_group(self.available_groups[counter], self.client.id, 'add')
+                    else:
+                        self.client.groups.discard(self.groups_id_list[counter])
+                        self.update_group(self.available_groups[counter], self.client.id, 'remove')
                     counter = counter + 1
                 self.client.pay_bank = bool(self.pay_bank_new_var.get())
                 self.client.bank_acc = self.bank_acc_new.get()
@@ -809,6 +848,12 @@ class ModifyClientUI(ClientUI):
             error_label = tk.Label(self.popup_root, text='Error al Guardar, revisa la informacion introducida.',
                                    fg='red')
             error_label.grid(row=self.save_button_row - 1, column=0, columnspan=5, sticky=tk.S)
+
+    def update_group(self, group, client_id, action):
+        if action is 'add':
+            group.members.add(client_id)
+        else:
+            group.members.discard(client_id)
 
     def update_answers(self):
         self.name_ans.config(text=self.client.name)
@@ -852,14 +897,16 @@ class ModifyClientUI(ClientUI):
 
 
 class GroupUI:
-    def __init__(self, root, group):
+    def __init__(self, root, group, available_clients=list()):
         self.root = root
         self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' ' + str(group.days) + ' '
                         + str(group.time_start))
-        original_geometry = [650, 500]
+        original_geometry = [1150, 500]
         str_original_geometry = map(str, original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.group = group
+        self.available_clients = available_clients
 
         # FIELDS
         name_activity_field = tk.Label(self.root, text='Actividad: ')
@@ -897,16 +944,35 @@ class GroupUI:
         self.group_id_ans = tk.Label(self.root, text=str(group.id))
         self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
 
+        # MEMBERS LIST
+        self.members_listbox_frame = tk.Frame(self.root, width=800)
+        self.members_listbox_frame.grid(row=0, rowspan=20, column=3, sticky=tk.N + tk.W + tk.E + tk.S)
+        self.members_listbox = tk.Listbox(self.members_listbox_frame, width=60, height=30)
+        self.members_listbox.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.update_members_listbox()
+
+    def update_members_listbox(self):
+        self.members_listbox.delete(0, tk.END)
+        self.members_listbox.insert(tk.END, cl.Alumn.str_header)
+        ids = list(map(lambda client: client.id, self.available_clients))
+        self.members_listbox_obj = list()
+        for member_id in self.group.members:
+            index_client = ids.index(member_id)
+            client = self.available_clients[index_client]
+            self.members_listbox_obj.append(client)
+            self.members_listbox.insert(tk.END, str(client))
+
     def close_window(self):
         self.root.quit()
 
 
 class ModifyGroupUI(GroupUI):
-    def __init__(self, root, group, new_id=None):
-        super().__init__(root, group)
+    def __init__(self, root, group, new_id=None, available_clients=list()):
+        super().__init__(root, group, available_clients)
         self.group = group
         self.new_id = new_id
         self.new = False
+        self.available_clients = available_clients
 
         # FIELD ENTRIES
         self.name_activity_new = tk.Entry(self.root)
@@ -1000,9 +1066,48 @@ class ModifyGroupUI(GroupUI):
         self.members_limit_new.insert(0, str(group.limit_members))
         self.members_limit_new.grid(row=6, column=2, sticky=tk.N + tk.W)
 
+        # AVAILABLE CLIENTS LISTBOX
+        buttons_frame = tk.Frame(self.members_listbox_frame)
+        buttons_frame.grid(row=0, column=1)
+        self.add_button = tk.Button(buttons_frame, text='<< Añadir <<', width=15)
+        self.add_button.bind('<Button-1>', self.add_member)
+        self.add_button.grid(row=0, column=0, sticky=tk.S)
+        self.delete_button = tk.Button(buttons_frame, text='>> Eliminar >>', width=15)
+        self.delete_button.bind('<Button-1>', self.delete_member)
+        self.delete_button.grid(row=1, column=0, sticky=tk.N)
+        self.available_clients_listbox = tk.Listbox(self.members_listbox_frame, width=60, height=30)
+        self.available_clients_listbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.update_available_clients_listbox()
+
         save_button = tk.Button(self.root, text='Guardar', command=self.check_save)
-        self.save_button_row = 15
-        save_button.grid(row=self.save_button_row, column=0, columnspan=5, sticky=tk.S)
+        self.save_button_row = 10
+        save_button.grid(row=self.save_button_row, column=0, columnspan=3, sticky=tk.S)
+
+    def add_member(self, event):
+        if len(self.available_clients_listbox.curselection()) is 0:
+            return
+        index = self.available_clients_listbox.curselection()[0]-1
+        self.group.members.add(self.available_clients_listbox_obj[index].id)
+        self.update_members_listbox()
+        self.update_available_clients_listbox()
+
+    def delete_member(self, event):
+        if len(self.members_listbox.curselection()) is 0:
+            return
+        index = self.members_listbox.curselection()[0] - 1
+        client = self.members_listbox_obj[index]
+        self.group.members.discard(client.id)
+        self.update_members_listbox()
+        self.update_available_clients_listbox()
+
+    def update_available_clients_listbox(self):
+        self.available_clients_listbox.delete(0, tk.END)
+        self.available_clients_listbox.insert(tk.END, cl.Alumn.str_header)
+        self.available_clients_listbox_obj = list()
+        for client in self.available_clients:
+            if not client.id in self.group.members:
+                self.available_clients_listbox_obj.append(client)
+                self.available_clients_listbox.insert(tk.END, str(client))
 
     def press_days_checkbox(self, invoker):
         if invoker is 'monday':
@@ -1071,7 +1176,7 @@ class ModifyGroupUI(GroupUI):
         else:
             error_label = tk.Label(self.root, text='Error al Guardar, revisa la informacion introducida.',
                                    fg='red')
-            error_label.grid(row=self.save_button_row - 1, column=0, columnspan=5, sticky=tk.S)
+            error_label.grid(row=self.save_button_row - 1, column=0, columnspan=3, sticky=tk.S)
 
     def update_answers(self):
         self.name_activity_ans.config(text=self.group.name_activity)
