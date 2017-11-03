@@ -1,4 +1,4 @@
 name;surname;id_card;phone1;phone2;email;client_id;pay_bank;bank_acc;pay_period;groups
-filipo;bosque;465487231;54487231;;jon@gmail.com;1;False;;0;{}
-sebastiana;hernando;6234;654546854;;silvia@gmail.com;2;False;;1;{}
-mengana;reabasi;6234;73465781;;silvia@gmail.com;2;False;;2;{}
+Silvio;Fernandez;;;;;3;False;;0;set()
+filipa;reabasi;6234;45849;525;silvia@gmail.com;2;True;54848905;1;{1, 2}
+filipo;bosque;465487231;54487231;;jon@gmail.com;1;True;548454514;2;{0, 2}
