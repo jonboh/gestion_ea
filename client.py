@@ -14,6 +14,10 @@ class Client:
         else:
             self.id = int(client_id)
 
+    def entries(self):
+        entries_list = [self.name, self.surname, self.id_card, self.phone1,self.phone2,self.email, self.id]
+        return entries_list
+
     def __str__(self):
         ret_string = ';'.join(
             [self.name, self.surname, self.id_card, self.phone1, self.phone2, self.email,
@@ -34,6 +38,10 @@ class Alumn(Client):
             self.groups = set()
         else:
             self.groups = eval(groups)  # set
+
+    def entries(self):
+        entries_list = super().entries() + [self.pay_bank, self.bank_acc, self.pay_period, self.groups]
+        return entries_list
 
     def __str__(self):
         ret_string = ';'.join([super().__str__(), str(self.pay_bank), self.bank_acc, str(self.pay_period), str(self.groups)])
