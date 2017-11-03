@@ -7,7 +7,7 @@ class Group:
                  group_id='-1'):
         self.name_activity = name_activity
         self.name_teacher = name_teacher
-        if days is '{}':
+        if type(eval(days)) is dict:
             self.days = set()
         else:
             self.days = eval(days)
@@ -15,7 +15,7 @@ class Group:
         self.time_end = int(time_end)
         self.price = float(price)
         self.limit_members = int(limit_members)
-        if days is '{}':
+        if type(eval(members)) is dict:
             self.members = set()
         else:
             self.members = eval(members)  # set
