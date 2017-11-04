@@ -109,6 +109,11 @@ class GestionEspacioAbierto:
         clients_table_frame.grid(row=1, column=0, columnspan=2, sticky='nwes')
         self.clients_tree_ids = list()
         self.clients_tree = ttk.Treeview(clients_table_frame)
+        cl_vsb = ttk.Scrollbar(clients_table_frame, orient="vertical", command=self.clients_tree.yview)
+        cl_vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        cl_hsb = ttk.Scrollbar(clients_table_frame, orient="horizontal", command=self.clients_tree.xview)
+        cl_hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.clients_tree.configure(yscrollcommand=cl_vsb.set, xscrollcommand=cl_hsb.set)
         self.clients_tree.pack(fill='both', expand=True)
         self.clients_tree.bind('<Double-Button-1>', lambda _: self.view_client())
         clients_list_buttons_frame = tk.Frame(self.clients_frame)
@@ -155,6 +160,11 @@ class GestionEspacioAbierto:
 
         self.groups_tree_ids = list()
         self.groups_tree = ttk.Treeview(groups_table_frame)
+        gr_vsb = ttk.Scrollbar(groups_table_frame, orient="vertical", command=self.groups_tree.yview)
+        gr_vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        gr_hsb = ttk.Scrollbar(groups_table_frame, orient="horizontal", command=self.groups_tree.xview)
+        gr_hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.clients_tree.configure(yscrollcommand=gr_vsb.set, xscrollcommand=gr_hsb.set)
         self.groups_tree.pack(fill='both', expand=True)
         self.groups_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
@@ -198,6 +208,11 @@ class GestionEspacioAbierto:
 
         self.items_tree_ids = list()
         self.items_tree = ttk.Treeview(items_table_frame)
+        it_vsb = ttk.Scrollbar(items_table_frame, orient="vertical", command=self.items_tree.yview)
+        it_vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        it_hsb = ttk.Scrollbar(items_table_frame, orient="horizontal", command=self.items_tree.xview)
+        it_hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.clients_tree.configure(yscrollcommand=it_vsb.set, xscrollcommand=it_hsb.set)
         self.items_tree.pack(fill='both', expand=True)
         self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
@@ -528,7 +543,6 @@ class GestionEspacioAbierto:
                 group.members.remove(client.id)
 
     # GROUPS FUNCTIONALITY
-
     def groups_list_window(self):
         self.groups_frame.tkraise()
 
