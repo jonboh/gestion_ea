@@ -26,7 +26,7 @@ class Client:
 
 
 class Alumn(Client):
-    str_header = Client.str_header + ['Domicilia (1/0)', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
+    str_header = Client.str_header + ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', pay_bank='0', bank_acc='', pay_period='0', groups='{}'):
@@ -40,7 +40,19 @@ class Alumn(Client):
             self.groups = eval(groups)  # set
 
     def entries(self):
-        entries_list = super().entries() + [self.pay_bank, self.bank_acc, self.pay_period, self.groups]
+        if self.pay_bank:
+            pay_bank = 'Si'
+        else:
+            pay_bank = 'No'
+        if self.pay_period is 0:
+            pay_period = 'Mensual'
+        elif self.pay_period is 1:
+            pay_period = 'Trimensual'
+        elif self.pay_period is 2:
+            pay_period = 'Anual'
+        else:
+            pay_period = 'Desconocido'
+        entries_list = super().entries() + [pay_bank, self.bank_acc, pay_period, self.groups]
         return entries_list
 
     def __str__(self):
