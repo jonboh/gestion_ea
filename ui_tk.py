@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+import threading as thr
 
 import data_io as io
 import client as cl
@@ -11,7 +12,7 @@ import item as it
 class GestionEspacioAbierto:
     def __init__(self, root):
         self.root = root
-        self.root.title('Gestion Espacio Abierto v0.1')
+        self.root.title('Gestion Espacio Abierto v0.7')
         self.original_geometry = [1100, 600]
         str_original_geometry = map(str, self.original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
@@ -103,7 +104,15 @@ class GestionEspacioAbierto:
                                                    variable=self.al_chbox_bank_var,
                                                    command=lambda: self.clients_checkbox_update('bank'))
         self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.E)
-
+        # Search Box
+        self.cl_search_entry = tk.Entry(clients_buttons_frame)
+        self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
+        self.cl_search_button = tk.Button(clients_buttons_frame, text='Buscar', command=self.search_clients)
+        self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
+        self.cl_search_clear_button = tk.Button(clients_buttons_frame, text='Resetear',
+                                                command=self.clear_search_clients)
+        self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
+        self.search_isactive = False
         # Clients Tree
         clients_table_frame = tk.Frame(self.clients_frame, background='black')
         clients_table_frame.grid(row=1, column=0, columnspan=2, sticky='nwes')
@@ -122,6 +131,7 @@ class GestionEspacioAbierto:
         clients_list_nav_frame = tk.Frame(self.clients_frame, background='red')
         clients_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(clients_list_nav_frame)
+
         # Sorters
         clients_sorters_frame = tk.Frame(self.clients_frame)
         clients_sorters_frame.grid(row=2, column=0, sticky=tk.W + tk.S)
@@ -162,9 +172,9 @@ class GestionEspacioAbierto:
         self.groups_tree = ttk.Treeview(groups_table_frame)
         gr_vsb = ttk.Scrollbar(groups_table_frame, orient="vertical", command=self.groups_tree.yview)
         gr_vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        gr_hsb = ttk.Scrollbar(groups_table_frame, orient="horizontal", command=self.groups_tree.xview)
-        gr_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.clients_tree.configure(yscrollcommand=gr_vsb.set, xscrollcommand=gr_hsb.set)
+        # gr_hsb = ttk.Scrollbar(groups_table_frame, orient="horizontal", command=self.groups_tree.xview)
+        # gr_hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.groups_tree.configure(yscrollcommand=gr_vsb.set)  # , xscrollcommand=gr_hsb.set)
         self.groups_tree.pack(fill='both', expand=True)
         self.groups_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
@@ -212,7 +222,7 @@ class GestionEspacioAbierto:
         it_vsb.pack(side=tk.RIGHT, fill=tk.Y)
         it_hsb = ttk.Scrollbar(items_table_frame, orient="horizontal", command=self.items_tree.xview)
         it_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.clients_tree.configure(yscrollcommand=it_vsb.set, xscrollcommand=it_hsb.set)
+        self.items_tree.configure(yscrollcommand=it_vsb.set, xscrollcommand=it_hsb.set)
         self.items_tree.pack(fill='both', expand=True)
         self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
@@ -324,57 +334,65 @@ class GestionEspacioAbierto:
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(0)
             self.al_chbox_bank_var.set(0)
-            self.clients_tree_update()
+            self.clear_search_clients()
         if invoker is 'Patients':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(1)
             self.al_chbox_var.set(0)
             self.al_chbox_bank_var.set(0)
-            self.clients_tree_update()
+            self.clear_search_clients()
         if invoker is 'Alumns':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
-            self.clients_tree_update()
+            self.clear_search_clients()
         if invoker is 'bank':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
+            self.clear_search_clients()
         self.clients_tree_update()
 
     def clients_tree_update(self):
 
         def create_table():
             entries = list()
-            # Clients
-            if self.pa_chbox_var.get():
-                self.clients_tree.config(columns=cl.Client.str_header)
-                for client in self.clients:
-                    self.clients_tree_obj.append(client)
-                    entry = client.entries()
-                    entries.append(entry)
-
-            if self.cl_chbox_var.get():
+            if self.search_isactive:
                 self.clients_tree.config(columns=cl.Alumn.str_header)
-                for client in self.clients + self.alumns:
+                for client in self.searched_clients:
                     self.clients_tree_obj.append(client)
                     entry = client.entries()
                     entries.append(entry)
-
-            # Alumns
-            if self.al_chbox_var.get() is 1:
-                for client in self.alumns:
-                    self.clients_tree.config(columns=cl.Alumn.str_header)
-                    # Alumns + Only Bank Pay
-                    if self.al_chbox_bank_var.get():
-                        if client.pay_bank:
-                            self.clients_tree_obj.append(client)
-                            entry = client.entries()
-                            entries.append(entry)
-                    else:
+            else:
+                # Clients
+                if self.pa_chbox_var.get():
+                    self.clients_tree.config(columns=cl.Client.str_header)
+                    for client in self.clients:
                         self.clients_tree_obj.append(client)
                         entry = client.entries()
                         entries.append(entry)
+
+                if self.cl_chbox_var.get():
+                    self.clients_tree.config(columns=cl.Alumn.str_header)
+                    for client in self.clients + self.alumns:
+                        self.clients_tree_obj.append(client)
+                        entry = client.entries()
+                        entries.append(entry)
+
+                # Alumns
+                if self.al_chbox_var.get() is 1:
+                    for client in self.alumns:
+                        self.clients_tree.config(columns=cl.Alumn.str_header)
+                        # Alumns + Only Bank Pay
+                        if self.al_chbox_bank_var.get():
+                            if client.pay_bank:
+                                self.clients_tree_obj.append(client)
+                                entry = client.entries()
+                                entries.append(entry)
+                        else:
+                            self.clients_tree_obj.append(client)
+                            entry = client.entries()
+                            entries.append(entry)
             return entries
 
         def build_tree(header_):
@@ -455,6 +473,29 @@ class GestionEspacioAbierto:
         self.sort_clients()
         self.clients_tree_update()
 
+    def search_clients(self):
+        self.cl_chbox_var.set(0)
+        self.pa_chbox_var.set(0)
+        self.al_chbox_var.set(0)
+        self.al_chbox_bank_var.set(0)
+        self.search_isactive = True
+        keyword = self.cl_search_entry.get()
+        clients_alumns = self.clients+self.alumns
+        names_surnames = list(map(lambda client:client.name+' '+client.surname,clients_alumns))
+        self.searched_clients = list()
+        counter=0
+        for name_surname in names_surnames:
+            if keyword in name_surname:
+                self.searched_clients.append(clients_alumns[counter])
+            counter = counter + 1
+        self.searched_clients = list(set(self.searched_clients))
+        self.clients_tree_update()
+
+    def clear_search_clients(self):
+        self.search_isactive = False
+        self.cl_search_entry.delete(0,tk.END)
+        self.clients_tree_update()
+
     def view_client(self):
         if len(self.clients_tree.selection()) is 0:
             return
@@ -476,7 +517,7 @@ class GestionEspacioAbierto:
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
-        if self.cl_chbox_var.get() is 1:
+        if self.pa_chbox_var.get() or self.cl_chbox_var.get():
             popup = ModifyClientUI(self.popup_root, cl.Client(), id_new_element, self.groups)
         else:
             popup = ModifyClientUI(self.popup_root, cl.Alumn(), id_new_element, self.groups)
@@ -518,7 +559,7 @@ class GestionEspacioAbierto:
     def delete_client(self):
         if len(self.clients_tree.selection()) is 0:
             return
-        selected_index = self.clients_tree.selection()[0] - 1
+        selected_index = self.clients_tree.index(self.clients_tree.selection()[0])
         client = self.clients_tree_obj[selected_index]
         if self.popup_root.isalive:
             self.popup_root.destroy()
@@ -645,7 +686,7 @@ class GestionEspacioAbierto:
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
-        popup = ModifyGroupUI(self.popup_root, gr.Group(), id_new_element)
+        popup = ModifyGroupUI(self.popup_root, gr.Group(), id_new_element, self.alumns)
         self.popup_root.mainloop()
         self.popup_root.destroy()
         if popup.new:
@@ -1420,6 +1461,7 @@ class ModifyGroupUI(GroupUI):
                 self.group.id = self.new_id
             self.update_answers()
             self.new = True
+            self.saved = True
         else:
             error_label = tk.Label(self.root, text='Error al Guardar, revisa la informacion introducida.',
                                    fg='red')
