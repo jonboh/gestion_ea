@@ -1,5 +1,5 @@
 class Group:
-    str_header = ['Actividad', 'Monitor/a', 'Dias', 'Inicio', 'Final', 'Precio', 'Limite de Miembros', 'Miembros',
+    str_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros', 'Limite de Miembros',
                   'ID Grupo']
 
     def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00', price='0.0',
@@ -14,11 +14,11 @@ class Group:
         self.time_start = int(time_start)
         self.time_end = int(time_end)
         self.price = float(price)
-        self.limit_members = int(limit_members)
         if type(eval(members)) is dict:
             self.members = set()
         else:
             self.members = eval(members)  # set
+        self.limit_members = int(limit_members)
         self.id = int(group_id)
 
     def __str__(self):
@@ -30,6 +30,11 @@ class Group:
     def display(self):
         disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
         return disp_string
+
+    def entries(self):
+        entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(), self.price,
+                        len(self.members), self.limit_members,self.id]
+        return entries_list
 
     def timetable_format(self):
         hour_start = int(self.time_start / 100)

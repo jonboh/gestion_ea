@@ -15,7 +15,6 @@ class GestionEspacioAbierto:
         str_original_geometry = map(str, self.original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_program)
-        self.root.bind('<Configure>', self.resize_window)
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
         self.listbox_proportion = [0.125, 0.05]
@@ -64,7 +63,7 @@ class GestionEspacioAbierto:
         self.clients_frame = tk.Frame(self.root, background='blue')
         for index in range(1, 2):
             self.clients_frame.grid_rowconfigure(index, weight=1)
-        for index in range(0, 2):
+        for index in range(1, 2):
             self.clients_frame.grid_columnconfigure(index, weight=1)
         self.clients_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
 
@@ -93,9 +92,10 @@ class GestionEspacioAbierto:
                                                    variable=self.al_chbox_bank_var,
                                                    command=lambda: self.clients_checkbox_update('bank'))
         self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.E)
-        self.clients_tree_objects = list()
+        self.clients_tree_ids = list()
         self.clients_tree = ttk.Treeview(clients_table_frame)
         self.clients_tree.pack(fill='both',expand=True)
+        self.clients_tree.bind('<Double-Button-1>', lambda _: self.view_client())
         clients_list_buttons_frame = tk.Frame(self.clients_frame)
         clients_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
         self.list_buttons(clients_list_buttons_frame, cl.Client)
@@ -124,29 +124,31 @@ class GestionEspacioAbierto:
         self.cl_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
     def init_group_window(self):
-        self.groups_frame = tk.Frame(self.root, background='yellow')
-        self.groups_frame.grid_rowconfigure(0, weight=1)
-        self.groups_frame.grid_columnconfigure(0, weight=1)
+        self.groups_frame = tk.Frame(self.root, background='blue')
+        for index in range(1, 2):
+            self.groups_frame.grid_rowconfigure(index, weight=1)
+        for index in range(1, 2):
+            self.groups_frame.grid_columnconfigure(index, weight=1)
         self.groups_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         groups_table_frame = tk.Frame(self.groups_frame, background='black')
-        groups_table_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        groups_table_label = tk.Label(groups_table_frame, text='Grupos: ', font=("Helvetica", 14))
+        groups_table_frame.grid(row=1, column=0,columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S)
+        groups_table_label = tk.Label(self.groups_frame, text='Grupos: ', font=("Helvetica", 14))
         groups_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
         groups_list_buttons_frame = tk.Frame(self.groups_frame)
-        groups_list_buttons_frame.grid(row=0, column=0, sticky=tk.N + tk.E)
+        groups_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
         self.list_buttons(groups_list_buttons_frame, gr.Group)
-        self.groups_listbox = tk.Listbox(groups_table_frame,
-                                         width=int(self.original_geometry[0] * self.listbox_proportion[0]),
-                                         height=int(self.original_geometry[1] * self.listbox_proportion[1]))
-        self.groups_listbox.grid(row=1, column=0, columnspan=3, sticky=tk.N + tk.W)
-        self.groups_listbox.bind('<Double-Button-1>', self.group_window)
+
+        self.groups_tree_ids = list()
+        self.groups_tree = ttk.Treeview(groups_table_frame)
+        self.groups_tree.pack(fill='both',expand=True)
+        self.groups_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
         groups_list_nav_frame = tk.Frame(self.groups_frame, background='red')
-        groups_list_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        groups_list_nav_frame.grid(row=2, column=1,columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(groups_list_nav_frame)
         # Sorters
         groups_sorters_frame = tk.Frame(self.groups_frame)
-        groups_sorters_frame.grid(row=1, sticky=tk.W + tk.S)
+        groups_sorters_frame.grid(row=2, sticky=tk.W + tk.S)
         groups_sort_label = tk.Label(groups_sorters_frame, text='Ordernar por: ')
         groups_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
         self.gr_activity_sort_var = tk.IntVar()
@@ -154,48 +156,52 @@ class GestionEspacioAbierto:
                                                      command=lambda: self.sort_groups_event('activity'))
         self.gr_activity_sort_var.set(1)
         self.gr_activity_sort_chbox.select()
-        # self.gr_activity_sort_chbox.bind('<Button-1>', self.sort_groups_event)
         self.gr_activity_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
         self.gr_teacher_sort_var = tk.IntVar()
         self.gr_teacher_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Monitor/a',
                                                     command=lambda: self.sort_groups_event('teacher'))
-        # self.gr_teacher_sort_chbox.bind('<Button-1>', self.sort_groups_event)
         self.gr_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
         self.gr_inverse_sort_var = tk.IntVar()
         self.gr_inverse_sort_chbox = tk.Checkbutton(groups_sorters_frame, text='Invertir orden',
                                                     command=lambda: self.sort_groups_event('inverse'))
-        # self.gr_inverse_sort_chbox.bind('<Button-1>', self.sort_groups_event)
         self.gr_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
     def list_buttons(self, parent_frame, type_client):
         if type_client is cl.Client:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_client)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            view_button = tk.Button(parent_frame, text='Ver', command=self.view_client)
+            view_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_client)
-            modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_client)
-            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
-            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         elif type_client is gr.Group:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_group)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            view_button = tk.Button(parent_frame, text='Ver', command=self.view_group)
+            view_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_group)
-            modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_group)
-            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
-            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         else:
             new_button = tk.Button(parent_frame, text='Nuevo')
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            view_button = tk.Button(parent_frame, text='Ver')
+            view_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             modify_button = tk.Button(parent_frame, text='Modificar')
-            modify_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar')
-            delete_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar')
-            export_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         new_button.config(width=20)
+        view_button.config(width=20)
         modify_button.config(width=20)
         delete_button.config(width=20)
         export_button.config(width=20)
@@ -213,13 +219,6 @@ class GestionEspacioAbierto:
         groups_button = tk.Button(parent_frame, command=self.groups_list_window, text='Grupos',
                                   width=10)
         groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
-
-    def resize_window(self, event):
-        if event.widget is self.root:
-            w = event.width
-            h = event.height
-            self.groups_listbox.config(width=int(w * self.listbox_proportion[0]),
-                                       height=int(h * self.listbox_proportion[1]))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -282,14 +281,14 @@ class GestionEspacioAbierto:
             header = cl.Client.str_header
         self.clients_tree.config(columns=header, show='headings')
         self.sort_clients()
-        for object in self.clients_tree_objects:
+        for object in self.clients_tree_ids:
             self.clients_tree.delete(object)
         self.clients_tree_obj = list()  # the original object
-        self.clients_tree_objects = list()  # the treeview object
+        self.clients_tree_ids = list()  # the treeview object
         entry_list = create_table()
         build_tree(header)
         for item in entry_list:
-            self.clients_tree_objects.append(self.clients_tree.insert('', 'end', values=item))
+            self.clients_tree_ids.append(self.clients_tree.insert('', 'end', values=item))
             for ix, val in enumerate(item):
                 col_w = tkFont.Font().measure(val)
                 if self.clients_tree.column(header[ix], width=None) < col_w:
@@ -352,17 +351,35 @@ class GestionEspacioAbierto:
         self.clients_listbox_update()
 
     def groups_listbox_update(self):
+
+        def create_table():
+            entries = list()
+            for group in self.groups:
+                self.groups_tree_obj.append(group)
+                entry = group.entries()
+                entries.append(entry)
+            return entries
+
+        def build_tree(header_):
+            for col in header_:
+                self.groups_tree.heading(col, text=col.title())
+                self.groups_tree.column(col, width=tkFont.Font().measure(col.title()))
+
+        header = gr.Group.str_header
+        self.groups_tree.config(columns=header, show='headings')
         self.sort_groups()
-        self.groups_listbox.delete(0, tk.END)
-        self.groups_listbox_obj = list()
-        # header = format_groups()
-        header = ' '.join(gr.Group.str_header)
-        self.groups_listbox.insert(tk.END, header)
-        for group in self.groups:
-            # entry = format_clients()
-            self.groups_listbox_obj.append(group)
-            entry = ' '.join(str(group).split(';'))
-            self.groups_listbox.insert(tk.END, entry)
+        for object in self.groups_tree_ids:
+            self.groups_tree.delete(object)
+        self.groups_tree_obj = list()
+        self.groups_tree_ids = list()
+        entry_list = create_table()
+        build_tree(header)
+        for item in entry_list:
+            self.groups_tree_ids.append(self.groups_tree.insert('', 'end', values=item))
+            for ix, val in enumerate(item):
+                col_w = tkFont.Font().measure(val)
+                if self.groups_tree.column(header[ix], width=None) < col_w:
+                    self.groups_tree.column(header[ix], width=col_w)
 
     def sort_groups(self):
         def normal_activity_sort(groups):
@@ -414,8 +431,10 @@ class GestionEspacioAbierto:
         self.sort_groups()
         self.groups_listbox_update()
 
-    def client_window(self, event):
-        selected_index = self.clients_tree.selection()[0] - 1  # -1 discounts the header
+    def view_client(self):
+        if len(self.clients_tree.selection()) is 0:
+            return
+        selected_index = self.clients_tree.index(self.clients_tree.selection()[0])
         if not selected_index is -1:
             client = self.clients_tree_obj[selected_index]
             if self.popup_root.isalive:
@@ -499,10 +518,12 @@ class GestionEspacioAbierto:
     def groups_list_window(self):
         self.groups_frame.tkraise()
 
-    def group_window(self, event):
-        selected_index = self.groups_listbox.curselection()[0] - 1
+    def view_group(self):
+        if len(self.groups_tree.selection()) is 0:
+            return
+        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
         if not selected_index is -1:
-            group = self.groups_listbox_obj[selected_index]
+            group = self.groups_tree_obj[selected_index]
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             self.popup_root = TkSecure()
