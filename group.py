@@ -33,7 +33,7 @@ class Group:
 
     def entries(self):
         entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(), self.price,
-                        len(self.members), self.limit_members,self.id]
+                        len(self.members), self.limit_members, self.id]
         return entries_list
 
     def timetable_format(self):
@@ -84,8 +84,8 @@ def available_id(elements_list):
     get_id = lambda element: element.id
     map_ids = map(get_id, elements_list)
     list_ids = list(map_ids)
-    id = max(list_ids) + 1
-    return id
+    id_available = max(list_ids) + 1
+    return id_available
 
 
 def check_id_integrity(elements_list):
