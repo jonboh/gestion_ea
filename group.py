@@ -84,7 +84,10 @@ def available_id(elements_list):
     get_id = lambda element: element.id
     map_ids = map(get_id, elements_list)
     list_ids = list(map_ids)
-    id_available = max(list_ids) + 1
+    if len(list_ids) is 0:
+        id_available = 0
+    else:
+        id_available = max(list_ids) + 1
     return id_available
 
 
