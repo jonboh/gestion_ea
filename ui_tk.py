@@ -944,7 +944,6 @@ class ModifyClientUI(ClientUI):
                 else:
                     self.groups_var[counter].set(0)
             counter = counter + 1
-        a = 1
 
     def press_pay_bank_ans(self):
         if self.pay_bank_new_var.get() is 0:
@@ -990,9 +989,9 @@ class ModifyClientUI(ClientUI):
         areusure_root.destroy()
         if areusure.answer:
             if type(self.client) is cl.Client:
-                self.client = cast_client_alumn(self.client)
+                self.client = cl.cast_client_alumn(self.client)
             elif type(self.client) is cl.Alumn:
-                self.client = cast_alumn_client(self.client)
+                self.client = cl.cast_alumn_client(self.client)
         self.popup_root.grab_release()
         self.reset_window()
 
@@ -1564,30 +1563,6 @@ class TkSecure(tk.Tk):
     def destroy(self):
         super().destroy()
         self.isalive = False
-
-
-def cast_client_alumn(client):
-    alumn = cl.Alumn()
-    alumn.name = client.name
-    alumn.surname = client.surname
-    alumn.id_card = client.id_card
-    alumn.phone1 = client.phone1
-    alumn.phone2 = client.phone2
-    alumn.email = client.email
-    alumn.id = client.id
-    return alumn
-
-
-def cast_alumn_client(alumn):
-    client = cl.Client()
-    client.name = alumn.name
-    client.surname = alumn.surname
-    client.id_card = alumn.id_card
-    client.phone1 = alumn.phone1
-    client.phone2 = alumn.phone2
-    client.email = alumn.email
-    client.id = alumn.id
-    return client
 
 
 if __name__ == '__main__':

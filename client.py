@@ -1,8 +1,8 @@
 class Client:
     str_header = ['Nombre', 'Apellidos', 'DNI', 'Tlf 1', 'Tlf 2', 'e-mail', 'ID Cliente']
 
-    def __init__(self, name = '', surname = '', id_card = '', phone1 = '', phone2 = '', email = '',
-                 client_id = ''):
+    def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
+                 client_id=''):
         self.name = name
         self.surname = surname
         self.id_card = id_card
@@ -15,7 +15,7 @@ class Client:
             self.id = int(client_id)
 
     def entries(self):
-        entries_list = [self.name, self.surname, self.id_card, self.phone1,self.phone2,self.email, self.id]
+        entries_list = [self.name, self.surname, self.id_card, self.phone1, self.phone2, self.email, self.id]
         return entries_list
 
     def __str__(self):
@@ -56,5 +56,30 @@ class Alumn(Client):
         return entries_list
 
     def __str__(self):
-        ret_string = ';'.join([super().__str__(), str(self.pay_bank), self.bank_acc, str(self.pay_period), str(self.groups)])
+        ret_string = ';'.join(
+            [super().__str__(), str(self.pay_bank), self.bank_acc, str(self.pay_period), str(self.groups)])
         return ret_string
+
+
+def cast_client_alumn(client):
+    alumn = Alumn()
+    alumn.name = client.name
+    alumn.surname = client.surname
+    alumn.id_card = client.id_card
+    alumn.phone1 = client.phone1
+    alumn.phone2 = client.phone2
+    alumn.email = client.email
+    alumn.id = client.id
+    return alumn
+
+
+def cast_alumn_client(alumn):
+    client = Client()
+    client.name = alumn.name
+    client.surname = alumn.surname
+    client.id_card = alumn.id_card
+    client.phone1 = alumn.phone1
+    client.phone2 = alumn.phone2
+    client.email = alumn.email
+    client.id = alumn.id
+    return client
