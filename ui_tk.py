@@ -5,6 +5,7 @@ import tkinter.ttk as ttk
 import data_io as io
 import client as cl
 import group as gr
+import item as it
 
 
 class GestionEspacioAbierto:
@@ -53,6 +54,10 @@ class GestionEspacioAbierto:
 
         # GROUPS WINDOW
         self.init_group_window()
+
+        # INVENTORY WINDOW
+        self.init_inventory_window()
+
         # UPDATE CLIENTS AND GROUPS LISTBOXES
         self.clients_listbox_update()
         self.groups_listbox_update()
@@ -166,8 +171,51 @@ class GestionEspacioAbierto:
                                                     command=lambda: self.sort_groups_event('inverse'))
         self.gr_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
-    def list_buttons(self, parent_frame, type_client):
-        if type_client is cl.Client:
+    def init_inventory_window(self):
+        self.items_frame = tk.Frame(self.root, background='blue')
+        for index in range(1, 2):
+            self.items_frame.grid_rowconfigure(index, weight=1)
+        for index in range(1, 2):
+            self.items_frame.grid_columnconfigure(index, weight=1)
+        self.items_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
+        items_table_frame = tk.Frame(self.items_frame, background='black')
+        items_table_frame.grid(row=1, column=0, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S)
+        items_table_label = tk.Label(self.items_frame, text='Inventario: ', font=("Helvetica", 14))
+        items_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        items_list_buttons_frame = tk.Frame(self.items_frame)
+        items_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
+        self.list_buttons(items_list_buttons_frame, it.Item)
+
+        self.items_tree_ids = list()
+        self.items_tree = ttk.Treeview(items_table_frame)
+        self.items_tree.pack(fill='both', expand=True)
+        self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
+
+        items_list_nav_frame = tk.Frame(self.items_frame, background='red')
+        items_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
+        self.navigation_interface(items_list_nav_frame)
+        # Sorters
+        items_sorters_frame = tk.Frame(self.items_frame)
+        items_sorters_frame.grid(row=2, sticky=tk.W + tk.S)
+        items_sort_label = tk.Label(items_sorters_frame, text='Ordernar por: ')
+        items_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        self.it_activity_sort_var = tk.IntVar()
+        self.it_activity_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Nombre',
+                                                     command=lambda: self.sort_items_event('name'))
+        self.it_activity_sort_var.set(1)
+        self.it_activity_sort_chbox.select()
+        self.it_activity_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.it_teacher_sort_var = tk.IntVar()
+        self.it_teacher_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
+                                                    command=lambda: self.sort_items_event('provider'))
+        self.it_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.it_inverse_sort_var = tk.IntVar()
+        self.it_inverse_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Invertir orden',
+                                                    command=lambda: self.sort_items_event('inverse'))
+        self.it_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
+
+    def list_buttons(self, parent_frame, type_window):
+        if type_window is cl.Client:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_client)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             view_button = tk.Button(parent_frame, text='Ver', command=self.view_client)
@@ -178,7 +226,7 @@ class GestionEspacioAbierto:
             delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
             export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
-        elif type_client is gr.Group:
+        elif type_window is gr.Group:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_group)
             new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             view_button = tk.Button(parent_frame, text='Ver', command=self.view_group)
@@ -186,6 +234,17 @@ class GestionEspacioAbierto:
             modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_group)
             modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_group)
+            delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
+            export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+        elif type_window is it.Item:
+            new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_item)
+            new_button.grid(row=0, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            view_button = tk.Button(parent_frame, text='Ver', command=self.view_item)
+            view_button.grid(row=1, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            modify_button = tk.Button(parent_frame, text='Modificar', command=self.modify_item)
+            modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
+            delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_item)
             delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
             export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
@@ -219,6 +278,9 @@ class GestionEspacioAbierto:
         groups_button = tk.Button(parent_frame, command=self.groups_list_window, text='Grupos',
                                   width=10)
         groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        items_button = tk.Button(parent_frame, command=self.items_list_window, text='Inventario',
+                                  width=10)
+        items_button.grid(row=0, column=4, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -226,6 +288,7 @@ class GestionEspacioAbierto:
     def welcome_window(self):
         self.welcome_frame.tkraise()
 
+    # CLIENTS FUNCTIONALITY
     def clients_list_window(self):
         self.clients_frame.tkraise()
 
@@ -350,87 +413,6 @@ class GestionEspacioAbierto:
         self.sort_clients()
         self.clients_listbox_update()
 
-    def groups_listbox_update(self):
-
-        def create_table():
-            entries = list()
-            for group in self.groups:
-                self.groups_tree_obj.append(group)
-                entry = group.entries()
-                entries.append(entry)
-            return entries
-
-        def build_tree(header_):
-            for col in header_:
-                self.groups_tree.heading(col, text=col.title())
-                self.groups_tree.column(col, width=tkFont.Font().measure(col.title()))
-
-        header = gr.Group.str_header
-        self.groups_tree.config(columns=header, show='headings')
-        self.sort_groups()
-        for object in self.groups_tree_ids:
-            self.groups_tree.delete(object)
-        self.groups_tree_obj = list()
-        self.groups_tree_ids = list()
-        entry_list = create_table()
-        build_tree(header)
-        for item in entry_list:
-            self.groups_tree_ids.append(self.groups_tree.insert('', 'end', values=item))
-            for ix, val in enumerate(item):
-                col_w = tkFont.Font().measure(val)
-                if self.groups_tree.column(header[ix], width=None) < col_w:
-                    self.groups_tree.column(header[ix], width=col_w)
-
-    def sort_groups(self):
-        def normal_activity_sort(groups):
-            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
-
-        def inverse_activity_sort(groups):
-            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
-            groups.reverse()
-
-        def normal_teacher_sort(groups):
-            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
-
-        def inverse_teacher_sort(groups):
-            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
-            groups.reverse()
-
-        if self.gr_inverse_sort_var.get() is 0:
-            if self.gr_activity_sort_var.get() is 1:
-                normal_activity_sort(self.groups)
-            elif self.gr_teacher_sort_var.get() is 1:
-                normal_teacher_sort(self.groups)
-        else:
-            if self.gr_activity_sort_var.get() is 1:
-                inverse_activity_sort(self.groups)
-            elif self.gr_teacher_sort_var.get() is 1:
-                inverse_teacher_sort(self.groups)
-
-    def sort_groups_event(self, invoker):
-        def widget_logic():
-            if invoker is 'activity':
-                self.gr_activity_sort_var.set(1)
-                self.gr_activity_sort_chbox.select()
-                self.gr_teacher_sort_var.set(0)
-                self.gr_teacher_sort_chbox.deselect()
-            elif invoker is 'teacher':
-                self.gr_teacher_sort_var.set(1)
-                self.gr_teacher_sort_chbox.select()
-                self.gr_activity_sort_var.set(0)
-                self.gr_activity_sort_chbox.deselect()
-            elif invoker is 'inverse':
-                if self.gr_inverse_sort_var.get() is 1:
-                    self.gr_inverse_sort_var.set(0)
-                    self.gr_inverse_sort_chbox.deselect()
-                else:
-                    self.gr_inverse_sort_var.set(1)
-                    self.gr_inverse_sort_chbox.select()
-
-        widget_logic()
-        self.sort_groups()
-        self.groups_listbox_update()
-
     def view_client(self):
         if len(self.clients_tree.selection()) is 0:
             return
@@ -515,8 +497,91 @@ class GestionEspacioAbierto:
             if client.id in group.members:
                 group.members.remove(client.id)
 
+    # GROUPS FUNCTIONALITY
+
     def groups_list_window(self):
         self.groups_frame.tkraise()
+
+    def groups_listbox_update(self):
+
+        def create_table():
+            entries = list()
+            for group in self.groups:
+                self.groups_tree_obj.append(group)
+                entry = group.entries()
+                entries.append(entry)
+            return entries
+
+        def build_tree(header_):
+            for col in header_:
+                self.groups_tree.heading(col, text=col.title())
+                self.groups_tree.column(col, width=tkFont.Font().measure(col.title()))
+
+        header = gr.Group.str_header
+        self.groups_tree.config(columns=header, show='headings')
+        self.sort_groups()
+        for object in self.groups_tree_ids:
+            self.groups_tree.delete(object)
+        self.groups_tree_obj = list()
+        self.groups_tree_ids = list()
+        entry_list = create_table()
+        build_tree(header)
+        for item in entry_list:
+            self.groups_tree_ids.append(self.groups_tree.insert('', 'end', values=item))
+            for ix, val in enumerate(item):
+                col_w = tkFont.Font().measure(val)
+                if self.groups_tree.column(header[ix], width=None) < col_w:
+                    self.groups_tree.column(header[ix], width=col_w)
+
+    def sort_groups(self):
+        def normal_activity_sort(groups):
+            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+
+        def inverse_activity_sort(groups):
+            groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+            groups.reverse()
+
+        def normal_teacher_sort(groups):
+            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+
+        def inverse_teacher_sort(groups):
+            groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+            groups.reverse()
+
+        if self.gr_inverse_sort_var.get() is 0:
+            if self.gr_activity_sort_var.get() is 1:
+                normal_activity_sort(self.groups)
+            elif self.gr_teacher_sort_var.get() is 1:
+                normal_teacher_sort(self.groups)
+        else:
+            if self.gr_activity_sort_var.get() is 1:
+                inverse_activity_sort(self.groups)
+            elif self.gr_teacher_sort_var.get() is 1:
+                inverse_teacher_sort(self.groups)
+
+    def sort_groups_event(self, invoker):
+        def widget_logic():
+            if invoker is 'activity':
+                self.gr_activity_sort_var.set(1)
+                self.gr_activity_sort_chbox.select()
+                self.gr_teacher_sort_var.set(0)
+                self.gr_teacher_sort_chbox.deselect()
+            elif invoker is 'teacher':
+                self.gr_teacher_sort_var.set(1)
+                self.gr_teacher_sort_chbox.select()
+                self.gr_activity_sort_var.set(0)
+                self.gr_activity_sort_chbox.deselect()
+            elif invoker is 'inverse':
+                if self.gr_inverse_sort_var.get() is 1:
+                    self.gr_inverse_sort_var.set(0)
+                    self.gr_inverse_sort_chbox.deselect()
+                else:
+                    self.gr_inverse_sort_var.set(1)
+                    self.gr_inverse_sort_chbox.select()
+
+        widget_logic()
+        self.sort_groups()
+        self.groups_listbox_update()
 
     def view_group(self):
         if len(self.groups_tree.selection()) is 0:
@@ -545,10 +610,10 @@ class GestionEspacioAbierto:
         self.clients_listbox_update()
 
     def modify_group(self):
-        if len(self.groups_listbox.curselection()) is 0:
+        if len(self.groups_tree.selection()) is 0:
             return
-        selected_index = self.groups_listbox.curselection()[0] - 1
-        group = self.groups_listbox_obj[selected_index]
+        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
+        group = self.groups_tree_obj[selected_index]
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
@@ -561,10 +626,10 @@ class GestionEspacioAbierto:
         self.groups_listbox_update()
 
     def delete_group(self):
-        if len(self.groups_listbox.curselection()) is 0:
+        if len(self.groups_tree.selection()) is 0:
             return
-        selected_index = self.groups_listbox.curselection()[0] - 1
-        group = self.groups_listbox_obj[selected_index]
+        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
+        group = self.groups_tree_obj[selected_index]
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
@@ -583,6 +648,26 @@ class GestionEspacioAbierto:
             if group.id in client.groups:
                 client.groups.remove(group.id)
 
+    # INVENTORY FUNCTIONALITY
+    def items_list_window(self):
+        self.items_frame.tkraise()
+
+    def sort_items_event(self,invoker):
+        pass
+
+    def view_item(self):
+        pass
+
+    def new_item(self):
+        pass
+
+    def modify_item(self):
+        pass
+
+    def delete_item(self):
+        pass
+
+    # GENERAL FUNCTIONALITY
     def export_selection(self):
         pass
 
