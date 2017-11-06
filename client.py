@@ -1,5 +1,5 @@
 class Client:
-    str_header = ['Nombre', 'Apellidos', 'DNI', 'Tlf 1', 'Tlf 2', 'e-mail', 'ID Cliente']
+    tree_header = ['Nombre', 'Apellidos', 'DNI', 'Tlf 1', 'Tlf 2', 'e-mail', 'ID Cliente']
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id=''):
@@ -14,7 +14,7 @@ class Client:
         else:
             self.id = int(client_id)
 
-    def entries(self):
+    def tree_entries(self):
         entries_list = [self.name, self.surname, self.id_card, self.phone1, self.phone2, self.email, self.id]
         return entries_list
 
@@ -26,7 +26,7 @@ class Client:
 
 
 class Alumn(Client):
-    str_header = Client.str_header + ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
+    tree_header = Client.tree_header + ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', pay_bank='0', bank_acc='', pay_period='0', groups='{}'):
@@ -39,7 +39,7 @@ class Alumn(Client):
         else:
             self.groups = eval(groups)  # set
 
-    def entries(self):
+    def tree_entries(self):
         if self.pay_bank:
             pay_bank = 'Si'
         else:
@@ -52,7 +52,7 @@ class Alumn(Client):
             pay_period = 'Anual'
         else:
             pay_period = 'Desconocido'
-        entries_list = super().entries() + [pay_bank, self.bank_acc, pay_period, self.groups]
+        entries_list = super().tree_entries() + [pay_bank, self.bank_acc, pay_period, self.groups]
         return entries_list
 
     def __str__(self):
