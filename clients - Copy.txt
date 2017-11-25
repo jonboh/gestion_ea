@@ -1,3 +1,0 @@
-name;surname;id_card;phone1;phone2;email;client_id
-jon;bosque;465487231;54487231;;jon@gmail.com;1
-silvia;hernando;6234;654546854;;silvia@gmail.com;2
