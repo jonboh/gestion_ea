@@ -111,7 +111,7 @@ class GestionEspacioAbierto:
         self.cl_search_button = tk.Button(clients_buttons_frame, text='Buscar', command=self.search_clients)
         self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
         self.cl_search_clear_button = tk.Button(clients_buttons_frame, text='Resetear',
-                                                command=self.clear_search_clients)
+                                                command=lambda:self.clients_checkbox_update('Clients'))
         self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
         self.search_isactive = False
         # Clients Tree
@@ -479,7 +479,7 @@ class GestionEspacioAbierto:
         self.searched_clients = list()
         counter = 0
         for name_surname in names_surnames:
-            if keyword in name_surname:
+            if keyword in name_surname.lower():
                 self.searched_clients.append(clients_alumns[counter])
             counter = counter + 1
         self.searched_clients = list(set(self.searched_clients))
@@ -1233,6 +1233,8 @@ class ModifyGroupUI(GroupUI):
         self.saved = True
         self.group = group
         self.new_id = new_id
+        if not self.new_id is None:  # We are modifying an existing group
+            self.group.id = self.new_id
         self.new = False
 
         # FIELD ENTRIES
@@ -1425,8 +1427,6 @@ class ModifyGroupUI(GroupUI):
             self.group.time_end = int(self.time_end_hour_new.get()) * 100 + int(self.time_end_min_new.get())
             self.group.price = float(self.price_new.get())
             self.group.limit_members = int(self.members_limit_new.get())
-            if not self.new_id is None:  # We are modifying an existing group
-                self.group.id = self.new_id
             self.update_answers()
             self.new = True
             self.saved = True
