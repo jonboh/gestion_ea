@@ -1,12 +1,13 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-import threading as thr
+import copy
 
 import data_io as io
 import client as cl
 import group as gr
 import item as it
+import tree
 
 
 class GestionEspacioAbierto:
@@ -168,14 +169,7 @@ class GestionEspacioAbierto:
         groups_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
         self.list_buttons(groups_list_buttons_frame, gr.Group)
 
-        self.groups_tree_ids = list()
-        self.groups_tree = ttk.Treeview(groups_table_frame)
-        gr_vsb = ttk.Scrollbar(groups_table_frame, orient="vertical", command=self.groups_tree.yview)
-        gr_vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        # gr_hsb = ttk.Scrollbar(groups_table_frame, orient="horizontal", command=self.groups_tree.xview)
-        # gr_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.groups_tree.configure(yscrollcommand=gr_vsb.set)  # , xscrollcommand=gr_hsb.set)
-        self.groups_tree.pack(fill='both', expand=True)
+        self.groups_tree = tree.TreeObject(groups_table_frame, self.groups, gr.Group)
         self.groups_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
         groups_list_nav_frame = tk.Frame(self.groups_frame, background='red')
@@ -358,40 +352,40 @@ class GestionEspacioAbierto:
         def create_table():
             entries = list()
             if self.search_isactive:
-                self.clients_tree.config(columns=cl.Alumn.str_header)
+                self.clients_tree.config(columns=cl.Alumn.tree_header)
                 for client in self.searched_clients:
                     self.clients_tree_obj.append(client)
-                    entry = client.entries()
+                    entry = client.tree_entries()
                     entries.append(entry)
             else:
                 # Clients
                 if self.pa_chbox_var.get():
-                    self.clients_tree.config(columns=cl.Client.str_header)
+                    self.clients_tree.config(columns=cl.Client.tree_header)
                     for client in self.clients:
                         self.clients_tree_obj.append(client)
-                        entry = client.entries()
+                        entry = client.tree_entries()
                         entries.append(entry)
 
                 if self.cl_chbox_var.get():
-                    self.clients_tree.config(columns=cl.Alumn.str_header)
+                    self.clients_tree.config(columns=cl.Alumn.tree_header)
                     for client in self.clients + self.alumns:
                         self.clients_tree_obj.append(client)
-                        entry = client.entries()
+                        entry = client.tree_entries()
                         entries.append(entry)
 
                 # Alumns
                 if self.al_chbox_var.get() is 1:
                     for client in self.alumns:
-                        self.clients_tree.config(columns=cl.Alumn.str_header)
+                        self.clients_tree.config(columns=cl.Alumn.tree_header)
                         # Alumns + Only Bank Pay
                         if self.al_chbox_bank_var.get():
                             if client.pay_bank:
                                 self.clients_tree_obj.append(client)
-                                entry = client.entries()
+                                entry = client.tree_entries()
                                 entries.append(entry)
                         else:
                             self.clients_tree_obj.append(client)
-                            entry = client.entries()
+                            entry = client.tree_entries()
                             entries.append(entry)
             return entries
 
@@ -401,9 +395,9 @@ class GestionEspacioAbierto:
                 self.clients_tree.column(col, width=tkFont.Font().measure(col.title()))
 
         if self.pa_chbox_var.get():
-            header = cl.Client.str_header
+            header = cl.Client.tree_header
         else:
-            header = cl.Alumn.str_header
+            header = cl.Alumn.tree_header
         self.clients_tree.config(columns=header, show='headings')
         self.sort_clients()
         for object in self.clients_tree_ids:
@@ -480,10 +474,10 @@ class GestionEspacioAbierto:
         self.al_chbox_bank_var.set(0)
         self.search_isactive = True
         keyword = self.cl_search_entry.get()
-        clients_alumns = self.clients+self.alumns
-        names_surnames = list(map(lambda client:client.name+' '+client.surname,clients_alumns))
+        clients_alumns = self.clients + self.alumns
+        names_surnames = list(map(lambda client: client.name + ' ' + client.surname, clients_alumns))
         self.searched_clients = list()
-        counter=0
+        counter = 0
         for name_surname in names_surnames:
             if keyword in name_surname:
                 self.searched_clients.append(clients_alumns[counter])
@@ -493,7 +487,7 @@ class GestionEspacioAbierto:
 
     def clear_search_clients(self):
         self.search_isactive = False
-        self.cl_search_entry.delete(0,tk.END)
+        self.cl_search_entry.delete(0, tk.END)
         self.clients_tree_update()
 
     def view_client(self):
@@ -588,35 +582,8 @@ class GestionEspacioAbierto:
         self.groups_frame.tkraise()
 
     def groups_tree_update(self):
-
-        def create_table():
-            entries = list()
-            for group in self.groups:
-                self.groups_tree_obj.append(group)
-                entry = group.entries()
-                entries.append(entry)
-            return entries
-
-        def build_tree(header_):
-            for col in header_:
-                self.groups_tree.heading(col, text=col.title())
-                self.groups_tree.column(col, width=tkFont.Font().measure(col.title()))
-
-        header = gr.Group.str_header
-        self.groups_tree.config(columns=header, show='headings')
-        self.sort_groups()
-        for object in self.groups_tree_ids:
-            self.groups_tree.delete(object)
-        self.groups_tree_obj = list()
-        self.groups_tree_ids = list()
-        entry_list = create_table()
-        build_tree(header)
-        for item in entry_list:
-            self.groups_tree_ids.append(self.groups_tree.insert('', 'end', values=item))
-            for ix, val in enumerate(item):
-                col_w = tkFont.Font().measure(val)
-                if self.groups_tree.column(header[ix], width=None) < col_w:
-                    self.groups_tree.column(header[ix], width=col_w)
+        self.groups_tree.clear_tree()
+        self.groups_tree.add_objects(self.groups)
 
     def sort_groups(self):
         def normal_activity_sort(groups):
@@ -669,11 +636,8 @@ class GestionEspacioAbierto:
         self.groups_tree_update()
 
     def view_group(self):
-        if len(self.groups_tree.selection()) is 0:
-            return
-        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
-        if not selected_index is -1:
-            group = self.groups_tree_obj[selected_index]
+        group = self.groups_tree.selection()
+        if not group is -1:
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             self.popup_root = TkSecure()
@@ -695,20 +659,18 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def modify_group(self):
-        if len(self.groups_tree.selection()) is 0:
-            return
-        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
-        group = self.groups_tree_obj[selected_index]
-        if self.popup_root.isalive:
+        group = self.groups_tree.selection()
+        if not group is -1:
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = ModifyGroupUI(self.popup_root, group, None, self.alumns)
+            self.popup_root.mainloop()
             self.popup_root.destroy()
-        self.popup_root = TkSecure()
-        popup = ModifyGroupUI(self.popup_root, group, None, self.alumns)
-        self.popup_root.mainloop()
-        self.popup_root.destroy()
-        if popup.new:
-            self.groups.remove(group)
-            self.groups.append(popup.group)
-        self.groups_tree_update()
+            if popup.new:
+                self.groups.remove(group)
+                self.groups.append(popup.group)
+            self.groups_tree_update()
 
     def delete_group(self):
         if len(self.groups_tree.selection()) is 0:
@@ -755,12 +717,29 @@ class GestionEspacioAbierto:
     def export_selection(self):
         pass
 
-    def save_all_info(self):
+    def check_integrity_database(self):
+        for alumn in self.alumns:
+            for group_in_alumn_id in alumn.groups:
+                for group in self.groups:
+                    if group_in_alumn_id == group.id and alumn.id not in group.members:
+                        print(''.join([
+                            'ERROR. The alumn ' + str(alumn.id) + ' says it is in group ' + str(group_in_alumn_id)
+                            + ' but not in group']))
+        for group in self.groups:
+            for alumn_in_group_id in group.members:
+                for alumn in self.alumns:
+                    if alumn_in_group_id == alumn.id and group.id not in alumn.groups:
+                        print(''.join([
+                            'ERROR. The group ' + str(group.id) + ' says it has the alumn ' + str(alumn_in_group_id)
+                            + ' but the alumn is not a member']))
+
+    def save_all_info(self):  # DISABLED FOR CONVINIENCE
         io.write_clients(file_clients, self.clients, cl.Client)
         io.write_clients(file_alumns, self.alumns, cl.Alumn)
         io.write_groups(file_groups, self.groups)
 
     def close_program(self):
+        self.check_integrity_database()
         self.save_all_info()
         self.root.quit()
 
@@ -877,6 +856,7 @@ class ModifyClientUI(ClientUI):
         self.new_id = new_id
         self.available_groups = available_groups
         self.new = False
+
         # NEW FIELD VALUES
         self.name_new = tk.Entry(self.main_frame, text=self.client.name)
         self.name_new.delete(0, tk.END)
@@ -1191,7 +1171,7 @@ class GroupUI:
         self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.group = group
-        self.available_clients = available_clients
+        self.available_clients = copy.copy(available_clients)
 
         # FIELDS
         name_activity_field = tk.Label(self.root, text='Actividad: ')
@@ -1230,22 +1210,18 @@ class GroupUI:
         self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
 
         # MEMBERS LIST
-        self.members_listbox_frame = tk.Frame(self.root, width=800)
-        self.members_listbox_frame.grid(row=0, rowspan=20, column=3, sticky=tk.N + tk.W + tk.E + tk.S)
-        self.members_listbox = tk.Listbox(self.members_listbox_frame, width=60, height=30)
-        self.members_listbox.grid(row=0, column=0, sticky=tk.N + tk.W)
-        self.update_members_listbox()
-
-    def update_members_listbox(self):
-        self.members_listbox.delete(0, tk.END)
-        self.members_listbox.insert(tk.END, cl.Alumn.str_header)
-        ids = list(map(lambda client: client.id, self.available_clients))
-        self.members_listbox_obj = list()
-        for member_id in self.group.members:
-            index_client = ids.index(member_id)
-            client = self.available_clients[index_client]
-            self.members_listbox_obj.append(client)
-            self.members_listbox.insert(tk.END, str(client))
+        self.members_frame = tk.Frame(self.root, width=800)
+        self.members_frame.grid(row=0, rowspan=20, column=3, sticky=tk.N + tk.W + tk.E + tk.S)
+        members_label = tk.Label(self.members_frame, text='Miembros: ')
+        members_label.grid(row=0, column=0, sticky=tk.N + tk.W)
+        members_tree_frame = tk.Frame(self.members_frame)
+        members_tree_frame.grid(row=1, column=0)
+        self.group_members = list()
+        for index in reversed(range(0, len(self.available_clients))):
+            if self.group.id in self.available_clients[index].groups:
+                self.group_members.append(self.available_clients.pop(index))
+        self.members_tree = tree.TreeObject(members_tree_frame, self.group_members, cl.Alumn,
+                                            [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0])
 
     def close_window(self):
         self.root.quit()
@@ -1258,7 +1234,6 @@ class ModifyGroupUI(GroupUI):
         self.group = group
         self.new_id = new_id
         self.new = False
-        self.available_clients = available_clients
 
         # FIELD ENTRIES
         self.name_activity_new = tk.Entry(self.root)
@@ -1353,17 +1328,20 @@ class ModifyGroupUI(GroupUI):
         self.members_limit_new.grid(row=6, column=2, sticky=tk.N + tk.W)
 
         # AVAILABLE CLIENTS LISTBOX
-        buttons_frame = tk.Frame(self.members_listbox_frame)
-        buttons_frame.grid(row=0, column=1)
+        buttons_frame = tk.Frame(self.members_frame)
+        buttons_frame.grid(row=1, column=1)
         self.add_button = tk.Button(buttons_frame, text='<< Añadir <<', width=15)
         self.add_button.bind('<Button-1>', self.add_member)
         self.add_button.grid(row=0, column=0, sticky=tk.S)
         self.delete_button = tk.Button(buttons_frame, text='>> Eliminar >>', width=15)
         self.delete_button.bind('<Button-1>', self.delete_member)
         self.delete_button.grid(row=1, column=0, sticky=tk.N)
-        self.available_clients_listbox = tk.Listbox(self.members_listbox_frame, width=60, height=30)
-        self.available_clients_listbox.grid(row=0, column=2, sticky=tk.N + tk.W)
-        self.update_available_clients_listbox()
+        available_clients_label = tk.Label(self.members_frame, text='Alumnos Disponibles: ')
+        available_clients_label.grid(row=0, column=2, sticky=tk.N + tk.W)
+        available_clients_table_frame = tk.Frame(self.members_frame)
+        available_clients_table_frame.grid(row=1, column=2, sticky=tk.N + tk.W)
+        self.available_clients_tree = tree.TreeObject(available_clients_table_frame, self.available_clients, cl.Alumn,
+                                                      [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0])
 
         save_button = tk.Button(self.root, text='Guardar', command=self.check_save)
         self.save_button_row = 10
@@ -1371,31 +1349,21 @@ class ModifyGroupUI(GroupUI):
 
     def add_member(self, event):
         self.saved = False
-        if len(self.available_clients_listbox.curselection()) is 0:
-            return
-        index = self.available_clients_listbox.curselection()[0] - 1
-        self.group.members.add(self.available_clients_listbox_obj[index].id)
-        self.update_members_listbox()
-        self.update_available_clients_listbox()
+        client = self.available_clients_tree.selection()
+        if not client is -1:
+            self.group.members.add(client.id)
+            client.groups.add(self.group.id)
+            self.available_clients_tree.delete_objects([client])
+            self.members_tree.add_objects([client])
 
     def delete_member(self, event):
         self.saved = False
-        if len(self.members_listbox.curselection()) is 0:
-            return
-        index = self.members_listbox.curselection()[0] - 1
-        client = self.members_listbox_obj[index]
-        self.group.members.discard(client.id)
-        self.update_members_listbox()
-        self.update_available_clients_listbox()
-
-    def update_available_clients_listbox(self):
-        self.available_clients_listbox.delete(0, tk.END)
-        self.available_clients_listbox.insert(tk.END, cl.Alumn.str_header)
-        self.available_clients_listbox_obj = list()
-        for client in self.available_clients:
-            if not client.id in self.group.members:
-                self.available_clients_listbox_obj.append(client)
-                self.available_clients_listbox.insert(tk.END, str(client))
+        client = self.members_tree.selection()
+        if not client is -1:
+            self.group.members.discard(client.id)
+            client.groups.discard(self.group.id)
+            self.members_tree.delete_objects([client])
+            self.available_clients_tree.add_objects([client])
 
     def press_days_checkbox(self, invoker):
         if invoker is 'monday':
