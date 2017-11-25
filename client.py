@@ -15,6 +15,14 @@ class Client:
         else:
             self.id = int(client_id)
 
+    def tree_header_map(self, header_map):
+        raw_entries_list = Client.tree_header
+        entries_list = list()
+        for entry, isincluded in zip(raw_entries_list, header_map[0:len(raw_entries_list)]):
+            if isincluded:
+                entries_list.append(entry)
+        return entries_list
+
     def tree_entries(self, header_map=default_header_map):
         raw_entries_list = [self.name, self.surname, self.id_card, self.phone1, self.phone2, self.email, self.id]
         entries_list = list()
@@ -32,7 +40,7 @@ class Client:
 
 class Alumn(Client):
     tree_header = Client.tree_header + ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
-    default_heder_map = Client.default_header_map + [1, 1, 1, 1]
+    default_header_map = Client.default_header_map + [1, 1, 1, 1]
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', pay_bank='0', bank_acc='', pay_period='0', groups='{}'):
@@ -45,7 +53,15 @@ class Alumn(Client):
         else:
             self.groups = eval(groups)  # set
 
-    def tree_entries(self, header_map=default_heder_map):
+    def tree_header_map(self, header_map):
+        raw_entries_list = ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
+        entries_list = super().tree_header_map(header_map)
+        for entry, isincluded in zip(raw_entries_list, header_map[len(Client.tree_header):]):
+            if isincluded:
+                entries_list.append(entry)
+        return entries_list
+
+    def tree_entries(self, header_map=default_header_map):
         if self.pay_bank:
             pay_bank = 'Si'
         else:
@@ -60,7 +76,7 @@ class Alumn(Client):
             pay_period = 'Desconocido'
         raw_entries_list = [pay_bank, self.bank_acc, pay_period, self.groups]
         entries_list = super().tree_entries(header_map)
-        for entry, isincluded in zip(raw_entries_list, header_map[len(entries_list):]):
+        for entry, isincluded in zip(raw_entries_list, header_map[len(Client.tree_header):]):
             if isincluded:
                 entries_list.append(entry)
         return entries_list

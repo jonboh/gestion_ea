@@ -28,3 +28,10 @@ def write_groups(file_groups, groups_list):
     with open(file_groups, 'w') as file:
         file.write(header + '\n')
         file.write('\n'.join(map(str, groups_list)))
+
+
+def write_export(filename, objects, object_type, header_map):
+    with open(filename, 'w') as file:
+        file.write(','.join(object_type().tree_header_map(header_map)) + '\n')
+        for object_ in objects:
+            file.write(','.join(map(str,object_.tree_entries(header_map))) + '\n')

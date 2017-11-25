@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+import tkinter.filedialog as tkfile
 import copy
 
 import data_io as io
@@ -247,7 +248,7 @@ class GestionEspacioAbierto:
             modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_client)
             delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
-            export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
+            export_button = tk.Button(parent_frame, text='Exportar', command=lambda: self.export_selection(cl.Alumn))
             export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         elif type_window is gr.Group:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_group)
@@ -258,7 +259,7 @@ class GestionEspacioAbierto:
             modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_group)
             delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
-            export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
+            export_button = tk.Button(parent_frame, text='Exportar', command=lambda: self.export_selection(gr.Group))
             export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         elif type_window is it.Item:
             new_button = tk.Button(parent_frame, text='Nuevo', command=self.new_item)
@@ -269,7 +270,7 @@ class GestionEspacioAbierto:
             modify_button.grid(row=2, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
             delete_button = tk.Button(parent_frame, text='Eliminar', command=self.delete_item)
             delete_button.grid(row=3, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
-            export_button = tk.Button(parent_frame, text='Exportar', command=self.export_selection)
+            export_button = tk.Button(parent_frame, text='Exportar', command=lambda: self.export_selection(it.Item))
             export_button.grid(row=4, column=0, sticky=tk.N + tk.E, padx=(10, 10), pady=(0, 10))
         else:
             new_button = tk.Button(parent_frame, text='Nuevo')
@@ -287,7 +288,6 @@ class GestionEspacioAbierto:
         modify_button.config(width=20)
         delete_button.config(width=20)
         export_button.config(width=20)
-        export_button.config(state=tk.DISABLED)
 
     def navigation_interface(self, parent_frame):
         save_button = tk.Button(parent_frame, command=self.save_all_info, text='Guardar', width=10)
@@ -440,17 +440,17 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def view_client(self):
-            client = self.clients_tree.selection()
-            if not client is -1:
-                if self.popup_root.isalive:
-                    self.popup_root.destroy()
-                self.popup_root = TkSecure()
-                if type(client) is cl.Client:
-                    popup = ClientUI(self.popup_root, client)
-                elif type(client) is cl.Alumn:
-                    popup = ClientUI(self.popup_root, client, self.groups)
-                self.popup_root.mainloop()
+        client = self.clients_tree.selection()
+        if not client is -1:
+            if self.popup_root.isalive:
                 self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            if type(client) is cl.Client:
+                popup = ClientUI(self.popup_root, client)
+            elif type(client) is cl.Alumn:
+                popup = ClientUI(self.popup_root, client, self.groups)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
 
     def new_client(self):
         id_new_element = gr.available_id(self.clients + self.alumns)
@@ -654,8 +654,20 @@ class GestionEspacioAbierto:
         pass
 
     # GENERAL FUNCTIONALITY
-    def export_selection(self):
-        pass
+    def export_selection(self, object_type):
+        if object_type is cl.Alumn:
+            self.popup_root = TkSecure()
+            popup = ExportUI(self.popup_root, self.clients_tree.objects, cl.Alumn)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
+        elif object_type is gr.Group:
+            self.popup_root = TkSecure()
+            popup = ExportUI(self.popup_root, self.groups_tree.objects, gr.Group)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
+
+        elif object_type is it.Item:
+            pass
 
     def check_integrity_database(self):
         for alumn in self.alumns:
@@ -1473,6 +1485,73 @@ class ModifyGroupUI(GroupUI):
                 super().close_window()
         else:
             super().close_window()
+
+
+class ExportUI():
+    def __init__(self, root, objects, object_type):
+        self.root = root
+        self.root.title('Exportar')
+        original_geometry = [1000, 500]
+        str_original_geometry = map(str, original_geometry)
+        self.root.geometry('x'.join(str_original_geometry))
+        self.root.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.export_header = object_type.default_header_map
+        self.export_header[-1] = 0  # avoid exporting sets. they are separeted by ','
+        self.object_type = object_type
+
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(fill='both')
+        self.main_frame.columnconfigure(0, weight=1)
+        selection_label = tk.Label(self.main_frame, text='Selecciona los campos que quieres exportar: ')
+        selection_label.grid(row=0, sticky='nw')
+        void_label = tk.Label(self.main_frame, text='')
+        void_label.grid(row=0, column=0, sticky='ne')
+        checkboxes_frame = tk.Frame(self.main_frame)
+        checkboxes_frame.grid(row=1, sticky='nw')
+        self.fields_var = list()
+        self.fields_checkboxes = list()
+        for field in object_type.tree_header[0:-1]:
+            field_var = tk.IntVar()
+            field_checkbox = tk.Checkbutton(checkboxes_frame, text=field)
+            field_checkbox.bind('<Button-1>', self.press_field_checkbox)
+            field_checkbox.pack(side=tk.LEFT, padx=(10, 0))
+            field_var.set(1)
+            field_checkbox.select()
+            self.fields_var.append(field_var)
+            self.fields_checkboxes.append(field_checkbox)
+
+        result_label = tk.Label(self.main_frame, text='Resultado del exportado: ')
+        result_label.grid(row=2, sticky='nw')
+        result_tree_frame = tk.Frame(self.main_frame)
+        result_tree_frame.grid(row=3, sticky='nwes')
+        self.result_tree = tree.TreeObject(result_tree_frame, objects, object_type)
+        self.saveas_button = tk.Button(self.main_frame, text='Guardar como...', command=self.saveas)
+        self.saveas_button.grid(row=4)
+
+    def saveas(self):
+        filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('text files', '.txt')],
+                                        initialfile='export.csv')
+        if filename:
+            filename = filename.name
+            if not filename[-4] is '.':
+                filename = filename + '.csv'
+            io.write_export(filename, self.result_tree.objects, self.object_type, self.result_tree.header_map)
+
+    def press_field_checkbox(self, event):
+        counter = 0
+        for checkbox in self.fields_checkboxes:
+            if event.widget is checkbox:
+                if self.fields_var[counter].get() is 0:
+                    self.fields_var[counter].set(1)
+                    self.export_header[counter] = 1
+                else:
+                    self.fields_var[counter].set(0)
+                    self.export_header[counter] = 0
+            counter = counter + 1
+        self.result_tree.modify_header(self.export_header)
+
+    def close_window(self):
+        self.root.quit()
 
 
 class AreYouSureUI:

@@ -28,9 +28,7 @@ class TreeObject:
         self.tree.pack(fill='both', expand=True)
         self.tree.config(columns=self.header, show='headings')
 
-        for col in self.header:
-            self.tree.heading(col, text=col.title())
-            self.tree.column(col, width=tkFont.Font().measure(col.title()))
+        self.size_columns()
 
         self.add_objects(object_list)
 
@@ -42,10 +40,6 @@ class TreeObject:
             self.tree_ids.append(
                 self.tree.insert('', 'end', values=object_.tree_entries(self.header_map)))
             self.objects.append(object_)
-            for ix, val in enumerate(object_.tree_entries(self.header_map)):
-                col_w = tkFont.Font().measure(val)
-                if self.tree.column(self.header[ix], width=None) < col_w:
-                    self.tree.column(self.header[ix], width=col_w)
 
     def update_entries(self, old_objects, new_objects):
         for old, new in zip(old_objects, new_objects):
@@ -53,7 +47,7 @@ class TreeObject:
             self.objects.pop(old)
             self.tree.delete(self.tree_ids.pop(index))
             self.tree_ids.append(
-                self.tree.insert('', index, values=new.tree_entries()))
+                self.tree.insert('', index, values=new.tree_entries(self.header_map)))
 
     def delete_objects(self, objects):
         for object_ in objects:
@@ -66,6 +60,29 @@ class TreeObject:
             self.tree.delete(object_)
         self.objects = list()
         self.tree_ids = list()
+
+    def modify_header(self, new_header_map):
+        self.header_map = new_header_map
+        self.header = list()
+        for entry, isinmap in zip(self.master_type.tree_header, self.header_map):
+            if isinmap:
+                self.header.append(entry)
+        # Redraw headings
+        self.tree.config(columns=self.header, show='headings')
+        for col in self.header:
+            self.tree.heading(col, text=col.title())
+            self.tree.column(col, width=tkFont.Font().measure(col.title()))
+        # Update rows values
+        for child, object_ in zip(self.tree.get_children(), self.objects):
+            self.tree.item(child, values=object_.tree_entries(self.header_map))
+        self.size_columns()
+
+    def size_columns(self):
+        total_size = 0
+        for col in self.header:
+            self.tree.heading(col, text=col.title())
+            self.tree.column(col, width=max(tkFont.Font().measure(col.title()), 80))
+            total_size = total_size + max(tkFont.Font().measure(col.title()), 80)
 
     def _theres_selection(self):
         if len(self.tree.selection()) is 0:
