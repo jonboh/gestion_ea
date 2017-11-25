@@ -111,20 +111,14 @@ class GestionEspacioAbierto:
         self.cl_search_button = tk.Button(clients_buttons_frame, text='Buscar', command=self.search_clients)
         self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
         self.cl_search_clear_button = tk.Button(clients_buttons_frame, text='Resetear',
-                                                command=lambda:self.clients_checkbox_update('Clients'))
+                                                command=lambda: self.clients_checkbox_update('Clients'))
         self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
         self.search_isactive = False
         # Clients Tree
         clients_table_frame = tk.Frame(self.clients_frame, background='black')
         clients_table_frame.grid(row=1, column=0, columnspan=2, sticky='nwes')
         self.clients_tree_ids = list()
-        self.clients_tree = ttk.Treeview(clients_table_frame)
-        cl_vsb = ttk.Scrollbar(clients_table_frame, orient="vertical", command=self.clients_tree.yview)
-        cl_vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        cl_hsb = ttk.Scrollbar(clients_table_frame, orient="horizontal", command=self.clients_tree.xview)
-        cl_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.clients_tree.configure(yscrollcommand=cl_vsb.set, xscrollcommand=cl_hsb.set)
-        self.clients_tree.pack(fill='both', expand=True)
+        self.clients_tree = tree.TreeObject(clients_table_frame, list(), cl.Alumn)
         self.clients_tree.bind('<Double-Button-1>', lambda _: self.view_client())
         clients_list_buttons_frame = tk.Frame(self.clients_frame)
         clients_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
@@ -348,70 +342,25 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def clients_tree_update(self):
-
-        def create_table():
-            entries = list()
-            if self.search_isactive:
-                self.clients_tree.config(columns=cl.Alumn.tree_header)
-                for client in self.searched_clients:
-                    self.clients_tree_obj.append(client)
-                    entry = client.tree_entries()
-                    entries.append(entry)
-            else:
-                # Clients
-                if self.pa_chbox_var.get():
-                    self.clients_tree.config(columns=cl.Client.tree_header)
-                    for client in self.clients:
-                        self.clients_tree_obj.append(client)
-                        entry = client.tree_entries()
-                        entries.append(entry)
-
-                if self.cl_chbox_var.get():
-                    self.clients_tree.config(columns=cl.Alumn.tree_header)
-                    for client in self.clients + self.alumns:
-                        self.clients_tree_obj.append(client)
-                        entry = client.tree_entries()
-                        entries.append(entry)
-
-                # Alumns
-                if self.al_chbox_var.get() is 1:
-                    for client in self.alumns:
-                        self.clients_tree.config(columns=cl.Alumn.tree_header)
-                        # Alumns + Only Bank Pay
-                        if self.al_chbox_bank_var.get():
-                            if client.pay_bank:
-                                self.clients_tree_obj.append(client)
-                                entry = client.tree_entries()
-                                entries.append(entry)
-                        else:
-                            self.clients_tree_obj.append(client)
-                            entry = client.tree_entries()
-                            entries.append(entry)
-            return entries
-
-        def build_tree(header_):
-            for col in header_:
-                self.clients_tree.heading(col, text=col.title())
-                self.clients_tree.column(col, width=tkFont.Font().measure(col.title()))
-
-        if self.pa_chbox_var.get():
-            header = cl.Client.tree_header
+        self.clients_tree.clear_tree()
+        if self.search_isactive:
+            for client in self.searched_clients:
+                self.clients_tree.add_objects([client])
         else:
-            header = cl.Alumn.tree_header
-        self.clients_tree.config(columns=header, show='headings')
-        self.sort_clients()
-        for object in self.clients_tree_ids:
-            self.clients_tree.delete(object)
-        self.clients_tree_obj = list()  # the original object
-        self.clients_tree_ids = list()  # the treeview object
-        entry_list = create_table()
-        build_tree(header)
-        for item in entry_list:
-            self.clients_tree_ids.append(self.clients_tree.insert('', 'end', values=item))
-            for ix, val in enumerate(item):
-                col_w = tkFont.Font().measure(val)
-                if self.clients_tree.column(header[ix], width=None) < col_w:
-                    self.clients_tree.column(header[ix], width=col_w)
+            # Clients
+            if self.pa_chbox_var.get():
+                self.clients_tree.add_objects(self.clients)
+            if self.cl_chbox_var.get():
+                self.clients_tree.add_objects(self.clients + self.alumns)
+            # Alumns
+            if self.al_chbox_var.get() is 1:
+                for client in self.alumns:
+                    # Alumns + Only Bank Pay
+                    if self.al_chbox_bank_var.get():
+                        if client.pay_bank:
+                            self.clients_tree.add_objects([client])
+                    else:
+                        self.clients_tree.add_objects([client])
 
     def sort_clients(self):
         def normal_name_sort(clients):
@@ -491,20 +440,17 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def view_client(self):
-        if len(self.clients_tree.selection()) is 0:
-            return
-        selected_index = self.clients_tree.index(self.clients_tree.selection()[0])
-        if not selected_index is -1:
-            client = self.clients_tree_obj[selected_index]
-            if self.popup_root.isalive:
+            client = self.clients_tree.selection()
+            if not client is -1:
+                if self.popup_root.isalive:
+                    self.popup_root.destroy()
+                self.popup_root = TkSecure()
+                if type(client) is cl.Client:
+                    popup = ClientUI(self.popup_root, client)
+                elif type(client) is cl.Alumn:
+                    popup = ClientUI(self.popup_root, client, self.groups)
+                self.popup_root.mainloop()
                 self.popup_root.destroy()
-            self.popup_root = TkSecure()
-            if type(client) is cl.Client:
-                popup = ClientUI(self.popup_root, client)
-            elif type(client) is cl.Alumn:
-                popup = ClientUI(self.popup_root, client, self.groups)
-            self.popup_root.mainloop()
-            self.popup_root.destroy()
 
     def new_client(self):
         id_new_element = gr.available_id(self.clients + self.alumns)
@@ -526,51 +472,45 @@ class GestionEspacioAbierto:
         self.groups_tree_update()
 
     def modify_client(self):
-        if len(self.clients_tree.selection()) is 0:
-            return
-        selected_index = self.clients_tree.index(self.clients_tree.selection()[0])
-        client = self.clients_tree_obj[selected_index]
-        if self.popup_root.isalive:
+        client = self.clients_tree.selection()
+        if not client is -1:
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = ModifyClientUI(self.popup_root, client, None, self.groups)
+            self.popup_root.mainloop()
             self.popup_root.destroy()
-        self.popup_root = TkSecure()
-        popup = ModifyClientUI(self.popup_root, client, None, self.groups)
-        self.popup_root.mainloop()
-        self.popup_root.destroy()
-        if popup.new:
-            # remove in_client from list
-            if type(client) is cl.Client:
-                self.clients.remove(client)
-            elif type(client) is cl.Alumn:
-                self.alumns.remove(client)
-            # add out_client from list
-            if type(popup.client) is cl.Client:
-                self.clients.append(popup.client)
-            elif type(popup.client) is cl.Alumn:
-                self.alumns.append(popup.client)
-        self.clients_tree_update()
-        self.groups_tree_update()
+            if popup.new:
+                # remove in_client from list
+                if type(client) is cl.Client:
+                    self.clients.remove(client)
+                elif type(client) is cl.Alumn:
+                    self.alumns.remove(client)
+                # add out_client from list
+                if type(popup.client) is cl.Client:
+                    self.clients.append(popup.client)
+                elif type(popup.client) is cl.Alumn:
+                    self.alumns.append(popup.client)
+            self.clients_tree_update()
+            self.groups_tree_update()
 
     def delete_client(self):
-        if len(self.clients_tree.selection()) is 0:
-            return
-        selected_index = self.clients_tree.index(self.clients_tree.selection()[0])
-        client = self.clients_tree_obj[selected_index]
-        if self.popup_root.isalive:
+        client = self.clients_tree.selection()
+        if not client is -1:
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = AreYouSureUI(self.popup_root)
+            self.popup_root.mainloop()
             self.popup_root.destroy()
-        if self.popup_root.isalive:
-            self.popup_root.destroy()
-        self.popup_root = TkSecure()
-        popup = AreYouSureUI(self.popup_root)
-        self.popup_root.mainloop()
-        self.popup_root.destroy()
-        if popup.answer:
-            if type(client) is cl.Client:
-                self.clients.remove(client)
-            if type(client) is cl.Alumn:
-                self.alumns.remove(client)
-            self.purge_member_from_groups(client)
-        self.clients_tree_update()
-        self.groups_tree_update()
+            if popup.answer:
+                if type(client) is cl.Client:
+                    self.clients.remove(client)
+                if type(client) is cl.Alumn:
+                    self.alumns.remove(client)
+                self.purge_member_from_groups(client)
+            self.clients_tree_update()
+            self.groups_tree_update()
 
     def purge_member_from_groups(self, client):
         for group in self.groups:
