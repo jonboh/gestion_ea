@@ -1,6 +1,7 @@
 class Group:
-    str_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros', 'Limite de Miembros',
-                  'ID Grupo']
+    tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros', 'Limite de Miembros',
+                   'ID Grupo']
+    default_header_map = [1 for _ in tree_header]
 
     def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00', price='0.0',
                  limit_members='0', members='{}',
@@ -31,9 +32,13 @@ class Group:
         disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
         return disp_string
 
-    def entries(self):
-        entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(), self.price,
+    def tree_entries(self,header_map):
+        raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(), self.price,
                         len(self.members), self.limit_members, self.id]
+        entries_list = list()
+        for entry,isincluded in zip(raw_entries_list,header_map):
+            if isincluded:
+                entries_list.append(entry)
         return entries_list
 
     def timetable_format(self):
