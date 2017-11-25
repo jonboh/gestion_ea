@@ -32,11 +32,12 @@ class Group:
         disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
         return disp_string
 
-    def tree_entries(self,header_map):
-        raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(), self.price,
-                        len(self.members), self.limit_members, self.id]
+    def tree_entries(self, header_map):
+        raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(),
+                            self.price,
+                            len(self.members), self.limit_members, self.id]
         entries_list = list()
-        for entry,isincluded in zip(raw_entries_list,header_map):
+        for entry, isincluded in zip(raw_entries_list, header_map):
             if isincluded:
                 entries_list.append(entry)
         return entries_list
@@ -71,9 +72,9 @@ class Group:
         if 'L' in self.days:
             days_str = days_str + 'Lunes '
         if 'M' in self.days:
-            days_str = days_str + 'Martes'
+            days_str = days_str + 'Martes '
         if 'X' in self.days:
-            days_str = days_str + 'Miercoles'
+            days_str = days_str + 'Miercoles '
         if 'J' in self.days:
             days_str = days_str + 'Jueves '
         if 'V' in self.days:
