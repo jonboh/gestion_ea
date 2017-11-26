@@ -27,17 +27,16 @@ class GestionEspacioAbierto:
         self.popup_root = TkSecureNone()
 
         # LOADING WINDOW DECLARATION
-        self.loading_frame = tk.Frame(self.root, background='green')
+        self.loading_frame = tk.Frame(self.root)
         self.loading_frame.grid_rowconfigure(0, weight=1)
         self.loading_frame.grid_columnconfigure(0, weight=1)
         self.loading_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-
         loading_label = tk.Label(self.loading_frame, text='Cargando, por favor espera...', background='white')
         loading_label.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
         self.loading_frame.tkraise()
 
         # WELCOME WINDOW DECLARATION
-        self.welcome_frame = tk.Frame(self.root, background='yellow')
+        self.welcome_frame = tk.Frame(self.root, background='#daf1eb')
         self.welcome_frame.grid_rowconfigure(0, weight=1)
         self.welcome_frame.grid_columnconfigure(0, weight=1)
         self.welcome_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
@@ -425,7 +424,7 @@ class GestionEspacioAbierto:
         self.searched_clients = list()
         counter = 0
         for name_surname in names_surnames:
-            if keyword in name_surname.lower():
+            if keyword.lower() in name_surname.lower():
                 self.searched_clients.append(clients_alumns[counter])
             counter = counter + 1
         self.searched_clients = list(set(self.searched_clients))
@@ -662,7 +661,6 @@ class GestionEspacioAbierto:
             popup = ExportUI(self.popup_root, self.groups_tree.objects, gr.Group)
             self.popup_root.mainloop()
             self.popup_root.destroy()
-
         elif object_type is it.Item:
             pass
 
@@ -1500,7 +1498,7 @@ class ExportUI:
         str_original_geometry = map(str, original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
-        self.export_header = object_type.default_header_map
+        self.export_header = copy.copy(object_type.default_header_map)
         self.export_header[-1] = 0  # avoid exporting sets. they are separeted by ','
         self.object_type = object_type
 
