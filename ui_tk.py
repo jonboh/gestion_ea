@@ -3,6 +3,8 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.filedialog as tkfile
 import copy
+import os.path as path
+import datetime
 
 import data_io as io
 import client as cl
@@ -51,6 +53,7 @@ class GestionEspacioAbierto:
         self.clients = io.load_clients(file_clients, cl.Client)
         self.alumns = io.load_clients(file_alumns, cl.Alumn)
         self.groups = io.load_groups(file_groups)
+        self.items = io.load_items(file_items)
 
         # CLIENTS LIST WINDOW
         self.init_client_window()
@@ -206,13 +209,7 @@ class GestionEspacioAbierto:
         self.list_buttons(items_list_buttons_frame, it.Item)
 
         self.items_tree_ids = list()
-        self.items_tree = ttk.Treeview(items_table_frame)
-        it_vsb = ttk.Scrollbar(items_table_frame, orient="vertical", command=self.items_tree.yview)
-        it_vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        it_hsb = ttk.Scrollbar(items_table_frame, orient="horizontal", command=self.items_tree.xview)
-        it_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.items_tree.configure(yscrollcommand=it_vsb.set, xscrollcommand=it_hsb.set)
-        self.items_tree.pack(fill='both', expand=True)
+        self.items_tree = tree.TreeObject(items_table_frame, list(), it.Item)
         self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
         items_list_nav_frame = tk.Frame(self.items_frame, background='red')
@@ -674,16 +671,22 @@ class GestionEspacioAbierto:
             for group_in_alumn_id in alumn.groups:
                 for group in self.groups:
                     if group_in_alumn_id == group.id and alumn.id not in group.members:
-                        print(''.join([
+                        logger.log(''.join([
                             'ERROR. The alumn ' + str(alumn.id) + ' says it is in group ' + str(group_in_alumn_id)
                             + ' but not in group']))
         for group in self.groups:
             for alumn_in_group_id in group.members:
                 for alumn in self.alumns:
                     if alumn_in_group_id == alumn.id and group.id not in alumn.groups:
-                        print(''.join([
+                        logger.log(''.join([
                             'ERROR. The group ' + str(group.id) + ' says it has the alumn ' + str(alumn_in_group_id)
                             + ' but the alumn is not a member']))
+        if not gr.check_id_integrity(self.clients + self.alumns):
+            logger.log('Clients/Alumns IDs not unique')
+        if not gr.check_id_integrity(self.groups):
+            logger.log('Groups IDs not unique')
+        if not gr.check_id_integrity(self.items):
+            logger.log('Items IDs not unique')
 
     def save_all_info(self):  # DISABLED FOR CONVINIENCE
         io.write_clients(file_clients, self.clients, cl.Client)
@@ -693,6 +696,8 @@ class GestionEspacioAbierto:
     def close_program(self):
         self.check_integrity_database()
         self.save_all_info()
+        logger.log_exit()
+        logger.write_log()
         self.root.quit()
 
 
@@ -1487,7 +1492,7 @@ class ModifyGroupUI(GroupUI):
             super().close_window()
 
 
-class ExportUI():
+class ExportUI:
     def __init__(self, root, objects, object_type):
         self.root = root
         self.root.title('Exportar')
@@ -1500,12 +1505,11 @@ class ExportUI():
         self.object_type = object_type
 
         self.main_frame = tk.Frame(self.root)
-        self.main_frame.pack(fill='both')
+        self.main_frame.pack(fill='both', expand=True)
         self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.rowconfigure(3, weight=1)
         selection_label = tk.Label(self.main_frame, text='Selecciona los campos que quieres exportar: ')
         selection_label.grid(row=0, sticky='nw')
-        void_label = tk.Label(self.main_frame, text='')
-        void_label.grid(row=0, column=0, sticky='ne')
         checkboxes_frame = tk.Frame(self.main_frame)
         checkboxes_frame.grid(row=1, sticky='nw')
         self.fields_var = list()
@@ -1526,7 +1530,7 @@ class ExportUI():
         result_tree_frame.grid(row=3, sticky='nwes')
         self.result_tree = tree.TreeObject(result_tree_frame, objects, object_type)
         self.saveas_button = tk.Button(self.main_frame, text='Guardar como...', command=self.saveas)
-        self.saveas_button.grid(row=4)
+        self.saveas_button.grid(row=4, sticky='s', pady=(10, 10))
 
     def saveas(self):
         filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('text files', '.txt')],
@@ -1593,7 +1597,7 @@ class AreYouSureUI:
         self.root.quit()
 
 
-class TkSecureNone():
+class TkSecureNone:
     def __init__(self):
         self.isalive = False
 
@@ -1608,10 +1612,57 @@ class TkSecure(tk.Tk):
         self.isalive = False
 
 
+class Logger:
+    def __init__(self):
+        self.pending_log = ''
+
+    def log(self, message):
+        self.pending_log = self.pending_log + '\n' + datetime.datetime.now().strftime(
+            '%d/%m/%y %H:%M:%S') + ': ' + message
+
+    def log_start(self):
+        self.pending_log = '\n' + \
+                           '  ------------- START -------------  ' \
+                           + datetime.datetime.now().strftime('%d/%m/%y %H:%M:%S') + \
+                           '  ------------- START -------------  ' + '\n'
+
+    def log_exit(self):
+        self.pending_log = '\n' + \
+                           '  -------------- EXIT -------------  ' \
+                           + datetime.datetime.now().strftime('%d/%m/%y %H:%M:%S') + \
+                           '  -------------- EXIT -------------  ' + '\n'
+
+    def write_log(self):
+        with open(file_log, 'a') as file:
+            file.write(self.pending_log)
+        self.pending_log = ''
+
+
 if __name__ == '__main__':
+    file_log = 'log.txt'
     file_clients = 'clients.txt'
     file_alumns = 'alumnos.txt'
     file_groups = 'groups.txt'
+    file_items = 'items.txt'
+    logger = Logger()
+    logger.log_start()
+    logger.write_log()
+    if not path.isfile(file_clients):
+        io.write_clients(file_clients, [], cl.Client)
+        logger.log('clients.txt not found. Empty cliets.txt created')
+        logger.write_log()
+    if not path.isfile(file_alumns):
+        io.write_clients(file_alumns, [], cl.Alumn)
+        logger.log('alumnos.txt not found. Empty alumnos.txt created')
+        logger.write_log()
+    if not path.isfile(file_groups):
+        io.write_groups(file_groups, [])
+        logger.log('groups.txt not found. Empty groups.txt created')
+        logger.write_log()
+    if not path.isfile(file_items):
+        io.write_items(file_items, [])
+        logger.log('items.txt not found. Empty items.txt created')
+        logger.write_log()
 
     root = tk.Tk()
     myapp = GestionEspacioAbierto(root)

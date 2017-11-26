@@ -102,4 +102,6 @@ def check_id_integrity(elements_list):
     map_ids = map(get_id, elements_list)
     list_ids = list(map_ids)
     if len(set(list_ids)) < len(list_ids):
-        raise ValueError('IDs are not unique')
+        return False
+    else:
+        return True
