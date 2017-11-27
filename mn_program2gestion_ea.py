@@ -3,7 +3,7 @@ import csv
 import client as cl
 import data_io as io
 
-file_mncsv = 'datos_mn.csv'
+file_mncsv = 'data/datos_mn.csv'
 output_file = 'alumnos.txt'
 client_list = list()
 with open(file_mncsv) as file:

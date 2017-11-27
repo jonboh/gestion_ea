@@ -15,6 +15,8 @@ import tree
 
 class GestionEspacioAbierto:
     def __init__(self, root):
+        self.bg_color = '#daf1eb'
+        self.border_color = 'black'
         self.root = root
         self.root.title('Gestion Espacio Abierto v0.7')
         self.original_geometry = [1100, 600]
@@ -36,14 +38,15 @@ class GestionEspacioAbierto:
         self.loading_frame.tkraise()
 
         # WELCOME WINDOW DECLARATION
-        self.welcome_frame = tk.Frame(self.root, background='#daf1eb')
+        self.welcome_frame = tk.Frame(self.root, background=self.bg_color)
         self.welcome_frame.grid_rowconfigure(0, weight=1)
         self.welcome_frame.grid_columnconfigure(0, weight=1)
         self.welcome_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        welcome_label = tk.Label(self.welcome_frame, background='white', text='Bienvenido, hora de trabajar',
+        welcome_label = tk.Label(self.welcome_frame, bg=self.bg_color, text='Bienvenido,',
                                  font=("Helvetica", 24))
         welcome_label.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(100, 0), pady=(80, 0))
-        welcome_nav_frame = tk.Frame(self.welcome_frame, background='red')
+
+        welcome_nav_frame = tk.Frame(self.welcome_frame, background=self.bg_color)
         welcome_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
         self.navigation_interface(welcome_nav_frame)
 
@@ -70,7 +73,7 @@ class GestionEspacioAbierto:
         self.welcome_frame.tkraise()
 
     def init_client_window(self):
-        self.clients_frame = tk.Frame(self.root, background='blue')
+        self.clients_frame = tk.Frame(self.root, background=self.bg_color)
         for index in range(1, 2):
             self.clients_frame.grid_rowconfigure(index, weight=1)
         for index in range(1, 2):
@@ -118,7 +121,7 @@ class GestionEspacioAbierto:
         self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
         self.search_isactive = False
         # Clients Tree
-        clients_table_frame = tk.Frame(self.clients_frame, background='black')
+        clients_table_frame = tk.Frame(self.clients_frame, background=self.bg_color)
         clients_table_frame.grid(row=1, column=0, columnspan=2, sticky='nwes')
         self.clients_tree_ids = list()
         self.clients_tree = tree.TreeObject(clients_table_frame, list(), cl.Alumn)
@@ -126,7 +129,7 @@ class GestionEspacioAbierto:
         clients_list_buttons_frame = tk.Frame(self.clients_frame)
         clients_list_buttons_frame.grid(row=1, column=3, sticky=tk.N + tk.E)
         self.list_buttons(clients_list_buttons_frame, cl.Client)
-        clients_list_nav_frame = tk.Frame(self.clients_frame, background='red')
+        clients_list_nav_frame = tk.Frame(self.clients_frame, background=self.bg_color)
         clients_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(clients_list_nav_frame)
 
@@ -152,13 +155,13 @@ class GestionEspacioAbierto:
         self.cl_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
     def init_group_window(self):
-        self.groups_frame = tk.Frame(self.root, background='blue')
+        self.groups_frame = tk.Frame(self.root, background=self.bg_color)
         for index in range(1, 2):
             self.groups_frame.grid_rowconfigure(index, weight=1)
         for index in range(1, 2):
             self.groups_frame.grid_columnconfigure(index, weight=1)
         self.groups_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        groups_table_frame = tk.Frame(self.groups_frame, background='black')
+        groups_table_frame = tk.Frame(self.groups_frame, background=self.bg_color)
         groups_table_frame.grid(row=1, column=0, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S)
         groups_table_label = tk.Label(self.groups_frame, text='Grupos: ', font=("Helvetica", 14))
         groups_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
@@ -169,7 +172,7 @@ class GestionEspacioAbierto:
         self.groups_tree = tree.TreeObject(groups_table_frame, self.groups, gr.Group)
         self.groups_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
-        groups_list_nav_frame = tk.Frame(self.groups_frame, background='red')
+        groups_list_nav_frame = tk.Frame(self.groups_frame, background=self.bg_color)
         groups_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(groups_list_nav_frame)
         # Sorters
@@ -193,13 +196,13 @@ class GestionEspacioAbierto:
         self.gr_inverse_sort_chbox.grid(row=1, column=1, sticky=tk.N + tk.W)
 
     def init_inventory_window(self):
-        self.items_frame = tk.Frame(self.root, background='blue')
+        self.items_frame = tk.Frame(self.root, background=self.bg_color)
         for index in range(1, 2):
             self.items_frame.grid_rowconfigure(index, weight=1)
         for index in range(1, 2):
             self.items_frame.grid_columnconfigure(index, weight=1)
         self.items_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        items_table_frame = tk.Frame(self.items_frame, background='black')
+        items_table_frame = tk.Frame(self.items_frame, background=self.bg_color)
         items_table_frame.grid(row=1, column=0, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S)
         items_table_label = tk.Label(self.items_frame, text='Inventario: ', font=("Helvetica", 14))
         items_table_label.grid(row=0, column=0, sticky=tk.N + tk.W)
@@ -211,7 +214,7 @@ class GestionEspacioAbierto:
         self.items_tree = tree.TreeObject(items_table_frame, list(), it.Item)
         self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
-        items_list_nav_frame = tk.Frame(self.items_frame, background='red')
+        items_list_nav_frame = tk.Frame(self.items_frame, background=self.bg_color)
         items_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(items_list_nav_frame)
         # Sorters
@@ -287,19 +290,19 @@ class GestionEspacioAbierto:
 
     def navigation_interface(self, parent_frame):
         save_button = tk.Button(parent_frame, command=self.save_all_info, text='Guardar', width=10)
-        save_button.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        save_button.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
         welcome_button = tk.Button(parent_frame, command=self.welcome_window, text='Bienvenida',
                                    width=10)
-        welcome_button.grid(row=0, column=1, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        welcome_button.grid(row=0, column=1, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
         clients_button = tk.Button(parent_frame, command=self.clients_list_window, text='Clientes',
                                    width=10)
-        clients_button.grid(row=0, column=2, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        clients_button.grid(row=0, column=2, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
         groups_button = tk.Button(parent_frame, command=self.groups_list_window, text='Grupos',
                                   width=10)
-        groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
         items_button = tk.Button(parent_frame, command=self.items_list_window, text='Inventario',
                                  width=10)
-        items_button.grid(row=0, column=4, sticky=tk.N + tk.W, padx=(0, 25), pady=(25, 25))
+        items_button.grid(row=0, column=4, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -609,10 +612,7 @@ class GestionEspacioAbierto:
             self.groups_tree_update()
 
     def delete_group(self):
-        if len(self.groups_tree.selection()) is 0:
-            return
-        selected_index = self.groups_tree.index(self.groups_tree.selection()[0])
-        group = self.groups_tree_obj[selected_index]
+        group = self.groups_tree.selection()
         if self.popup_root.isalive:
             self.popup_root.destroy()
         self.popup_root = TkSecure()
@@ -696,6 +696,8 @@ class GestionEspacioAbierto:
         self.save_all_info()
         logger.log_exit()
         logger.write_log()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
         self.root.quit()
 
 
@@ -703,9 +705,9 @@ class ClientUI:
     def __init__(self, popup_root, client, available_groups=list()):
         self.popup_root = popup_root
         self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
-        original_geometry = [200, 150]
-        str_original_geometry = map(str, original_geometry)
-        self.popup_root.geometry('x'.join(str_original_geometry))
+        # original_geometry = [200, 150]
+        # str_original_geometry = map(str, original_geometry)
+        # self.popup_root.geometry('x'.join(str_original_geometry))
         self.popup_root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.client = client
         self.available_groups = available_groups
@@ -804,9 +806,9 @@ class ModifyClientUI(ClientUI):
         self.saved = True
         if client.name is '':
             self.popup_root.title('Nuevo Cliente')
-        original_geometry = [300, 300]
-        str_original_geometry = map(str, original_geometry)
-        self.popup_root.geometry('x'.join(str_original_geometry))
+        # original_geometry = [300, 300]
+        # str_original_geometry = map(str, original_geometry)
+        # self.popup_root.geometry('x'.join(str_original_geometry))
         self.client = client
         self.new_id = new_id
         self.available_groups = available_groups
@@ -1121,9 +1123,9 @@ class GroupUI:
         self.root = root
         self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' ' + str(group.days) + ' '
                         + str(group.time_start))
-        original_geometry = [1150, 500]
-        str_original_geometry = map(str, original_geometry)
-        self.root.geometry('x'.join(str_original_geometry))
+        # original_geometry = [1150, 500]
+        # str_original_geometry = map(str, original_geometry)
+        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.group = group
         self.available_clients = copy.copy(available_clients)
@@ -1494,9 +1496,9 @@ class ExportUI:
     def __init__(self, root, objects, object_type):
         self.root = root
         self.root.title('Exportar')
-        original_geometry = [1000, 500]
-        str_original_geometry = map(str, original_geometry)
-        self.root.geometry('x'.join(str_original_geometry))
+        # original_geometry = [1000, 500]
+        # str_original_geometry = map(str, original_geometry)
+        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.export_header = copy.copy(object_type.default_header_map)
         self.export_header[-1] = 0  # avoid exporting sets. they are separeted by ','
@@ -1531,7 +1533,7 @@ class ExportUI:
         self.saveas_button.grid(row=4, sticky='s', pady=(10, 10))
 
     def saveas(self):
-        filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('text files', '.txt')],
+        filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('comma separated files', '.csv')],
                                         initialfile='export.csv')
         if filename:
             filename = filename.name
@@ -1598,6 +1600,9 @@ class AreYouSureUI:
 class TkSecureNone:
     def __init__(self):
         self.isalive = False
+
+    def destroy(self):
+        pass
 
 
 class TkSecure(tk.Tk):
