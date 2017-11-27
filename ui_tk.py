@@ -18,7 +18,7 @@ class GestionEspacioAbierto:
         self.bg_color = '#daf1eb'
         self.border_color = 'black'
         self.root = root
-        self.root.title('Gestion Espacio Abierto v0.7')
+        self.root.title('Gestion Espacio Abierto v1.0')
         self.original_geometry = [1100, 600]
         str_original_geometry = map(str, self.original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
@@ -302,7 +302,7 @@ class GestionEspacioAbierto:
         groups_button.grid(row=0, column=3, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
         items_button = tk.Button(parent_frame, command=self.items_list_window, text='Inventario',
                                  width=10)
-        items_button.grid(row=0, column=4, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
+        # items_button.grid(row=0, column=4, sticky=tk.N + tk.W, padx=(0, 10), pady=(10, 10))
 
     def loading_window(self):
         self.loading_frame.tkraise()
@@ -748,9 +748,6 @@ class ClientUI:
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
-            original_geometry = [600, 220]
-            str_original_geometry = map(str, original_geometry)
-            self.popup_root.geometry('x'.join(str_original_geometry))
             # FIELDS
             pay_bank_field = tk.Label(self.main_frame, text='Domicilia?:')
             pay_bank_field.grid(row=8, column=0, sticky=tk.N + tk.W)
@@ -792,7 +789,7 @@ class ClientUI:
                     group_checkbox.deselect()
 
     def groups_frame_init(self):
-        self.groups_frame = tk.Frame(self.main_frame, width=600)
+        self.groups_frame = tk.Frame(self.main_frame)
         self.groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S,
                                padx=(20, 0))
 
@@ -806,9 +803,6 @@ class ModifyClientUI(ClientUI):
         self.saved = True
         if client.name is '':
             self.popup_root.title('Nuevo Cliente')
-        # original_geometry = [300, 300]
-        # str_original_geometry = map(str, original_geometry)
-        # self.popup_root.geometry('x'.join(str_original_geometry))
         self.client = client
         self.new_id = new_id
         self.available_groups = available_groups
@@ -841,9 +835,6 @@ class ModifyClientUI(ClientUI):
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
-            original_geometry = [900, 320]
-            str_original_geometry = map(str, original_geometry)
-            self.popup_root.geometry('x'.join(str_original_geometry))
             self.pay_bank_new_var = tk.IntVar()
             self.pay_bank_new = tk.Checkbutton(self.main_frame, variable=self.pay_bank_new_var,
                                                command=lambda: self.press_pay_bank_ans())
@@ -918,7 +909,7 @@ class ModifyClientUI(ClientUI):
                 self.groups_id_list.append(group.id)
 
         save_button = tk.Button(self.main_frame, text='Guardar', command=self.check_save)
-        self.save_button_row = 15
+        self.save_button_row = 21
         save_button.grid(row=self.save_button_row, column=0, columnspan=5, sticky=tk.S)
         if type(self.client) is cl.Alumn:
             trans_label = 'Transformar en Paciente'
@@ -1123,9 +1114,6 @@ class GroupUI:
         self.root = root
         self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' ' + str(group.days) + ' '
                         + str(group.time_start))
-        # original_geometry = [1150, 500]
-        # str_original_geometry = map(str, original_geometry)
-        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.group = group
         self.available_clients = copy.copy(available_clients)
@@ -1167,7 +1155,7 @@ class GroupUI:
         self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
 
         # MEMBERS LIST
-        self.members_frame = tk.Frame(self.root, width=800)
+        self.members_frame = tk.Frame(self.root)
         self.members_frame.grid(row=0, rowspan=20, column=3, sticky=tk.N + tk.W + tk.E + tk.S)
         members_label = tk.Label(self.members_frame, text='Miembros: ')
         members_label.grid(row=0, column=0, sticky=tk.N + tk.W)
@@ -1496,9 +1484,6 @@ class ExportUI:
     def __init__(self, root, objects, object_type):
         self.root = root
         self.root.title('Exportar')
-        # original_geometry = [1000, 500]
-        # str_original_geometry = map(str, original_geometry)
-        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.export_header = copy.copy(object_type.default_header_map)
         self.export_header[-1] = 0  # avoid exporting sets. they are separeted by ','
