@@ -1,5 +1,0 @@
-name;surname;id_card;phone1;phone2;email;client_id;pay_bank;bank_acc;pay_period;groups
-Silvio;Fernandez;;;;;3;False;;0;{1}
-filipa;reabasi;6234;45849;525;silvia@gmail.com;2;True;54848905;1;{1, 2}
-filipo;bosque;465487231;54487231;;jon@gmail.com;1;True;548454514;2;{0, 1, 2}
-sebastiano;bosque;465487231;54487231;;jon@gmail.com;4;True;548454514;1;{0, 2}
