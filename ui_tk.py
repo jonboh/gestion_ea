@@ -5,6 +5,7 @@ import tkinter.filedialog as tkfile
 import copy
 import os.path as path
 import datetime
+from PIL import Image, ImageTk
 
 import data_io as io
 import client as cl
@@ -19,7 +20,7 @@ class GestionEspacioAbierto:
         self.border_color = 'black'
         self.root = root
         self.root.title('Gestion Espacio Abierto v1.0')
-        self.original_geometry = [1100, 600]
+        self.original_geometry = [1100, 800]
         str_original_geometry = map(str, self.original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_program)
@@ -38,16 +39,23 @@ class GestionEspacioAbierto:
         self.loading_frame.tkraise()
 
         # WELCOME WINDOW DECLARATION
-        self.welcome_frame = tk.Frame(self.root, background=self.bg_color)
+        self.welcome_frame = tk.Frame(self.root, background='white')
         self.welcome_frame.grid_rowconfigure(0, weight=1)
         self.welcome_frame.grid_columnconfigure(0, weight=1)
         self.welcome_frame.grid(row=0, column=0, sticky=tk.N + tk.W + tk.E + tk.S)
-        welcome_label = tk.Label(self.welcome_frame, bg=self.bg_color, text='Bienvenido,',
-                                 font=("Helvetica", 24))
-        welcome_label.grid(row=0, column=0, sticky=tk.N + tk.W, padx=(100, 0), pady=(80, 0))
+        logo = Image.open('logo.jpg')
+        logotk = ImageTk.PhotoImage(logo)
+        logo_image_label = tk.Label(self.welcome_frame, image=logotk, bg='white')
+        logo_image_label.image = logotk
+        logo_image_label.grid(row=1, column=0, sticky='nw', padx=(20, 20), pady=(20, 20))
+        label_logo = Image.open('label_logo.jpg')
+        label_logotk = ImageTk.PhotoImage(label_logo)
+        label_logo_image_label = tk.Label(self.welcome_frame, image=label_logotk, bg='white')
+        label_logo_image_label.image = label_logotk
+        label_logo_image_label.grid(row=0, column=0,columnspan=2, sticky='nwes', padx=(20, 20), pady=(20, 20))
 
         welcome_nav_frame = tk.Frame(self.welcome_frame, background=self.bg_color)
-        welcome_nav_frame.grid(row=1, column=0, sticky=tk.S + tk.E)
+        welcome_nav_frame.grid(row=1, column=1, sticky=tk.S + tk.E)
         self.navigation_interface(welcome_nav_frame)
 
         # LOAD CLIENTS AND GROUPS
