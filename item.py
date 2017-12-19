@@ -33,8 +33,8 @@ class Item:
         return entries_list
 
     def tree_entries(self, header_map):
-        raw_entries_list = [self.name, self.distributor, self.provider, self.ref_dist,
-                            self.ref_ea, self.price_buy, self.price_pvp, self.quantity]
+        raw_entries_list = [self.name, self.quantity, self.distributor, self.provider, self.ref_dist,
+                            self.ref_ea, self.price_buy, self.price_pvp]
         entries_list = list()
         for entry, isincluded in zip(raw_entries_list, header_map):
             if isincluded:
