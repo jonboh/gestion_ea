@@ -32,6 +32,14 @@ class Group:
         disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
         return disp_string
 
+    def tree_header_map(self, header_map):
+        raw_entries_list = Group.tree_header
+        entries_list = list()
+        for entry, isincluded in zip(raw_entries_list, header_map[0:len(raw_entries_list)]):
+            if isincluded:
+                entries_list.append(entry)
+        return entries_list
+
     def tree_entries(self, header_map):
         raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(),
                             self.price,

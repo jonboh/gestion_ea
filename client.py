@@ -74,7 +74,10 @@ class Alumn(Client):
             pay_period = 'Anual'
         else:
             pay_period = 'Desconocido'
-        raw_entries_list = [pay_bank, self.bank_acc, pay_period, self.groups]
+        groups = self.groups
+        if len(self.groups) == 0:
+            groups = '{}'
+        raw_entries_list = [pay_bank, self.bank_acc, pay_period, groups]
         entries_list = super().tree_entries(header_map)
         for entry, isincluded in zip(raw_entries_list, header_map[len(Client.tree_header):]):
             if isincluded:

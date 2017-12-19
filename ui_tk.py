@@ -18,7 +18,7 @@ class GestionEspacioAbierto:
         self.bg_color = '#daf1eb'
         self.border_color = 'black'
         self.root = root
-        self.root.title('Gestion Espacio Abierto v0.7')
+        self.root.title('Gestion Espacio Abierto v1.0')
         self.original_geometry = [1100, 600]
         str_original_geometry = map(str, self.original_geometry)
         self.root.geometry('x'.join(str_original_geometry))
@@ -85,7 +85,7 @@ class GestionEspacioAbierto:
 
         # Clients Checkboxes
         clients_buttons_frame = tk.Frame(self.clients_frame)
-        clients_buttons_frame.grid(row=0, column=1, sticky=tk.N + tk.W)
+        clients_buttons_frame.grid(row=0, column=1, sticky='ne')
         self.cl_chbox_var = tk.IntVar()
         self.cl_chbox_var.set(1)
         self.clients_checkbox = tk.Checkbutton(clients_buttons_frame, text='Clientes', font=("Helvetica", 10),
@@ -217,21 +217,38 @@ class GestionEspacioAbierto:
         items_list_nav_frame = tk.Frame(self.items_frame, background=self.bg_color)
         items_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
         self.navigation_interface(items_list_nav_frame)
+        # Reference show button and search box
+        items_buttons_frame = tk.Frame(self.items_frame)
+        items_buttons_frame.grid(row=0, column=1, sticky='ne')
+        self.show_references_items_var = 0
+        self.show_references_button = tk.Button(items_buttons_frame, text='Mostrar Referencias',
+                                                command=self.show_references_event)
+        self.show_references_button.grid(row=0, column=3, sticky='ne')
+        # Search Box
+        self.cl_search_entry = tk.Entry(items_buttons_frame)
+        self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
+        self.cl_search_button = tk.Button(items_buttons_frame, text='Buscar', command=self.search_clients)
+        self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
+        self.cl_search_clear_button = tk.Button(items_buttons_frame, text='Resetear',
+                                                command=lambda: self.clients_checkbox_update('Clients'))
+        self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
+        self.search_isactive = False
+
         # Sorters
         items_sorters_frame = tk.Frame(self.items_frame)
         items_sorters_frame.grid(row=2, sticky=tk.W + tk.S)
         items_sort_label = tk.Label(items_sorters_frame, text='Ordernar por: ')
         items_sort_label.grid(row=0, column=0, sticky=tk.N + tk.W)
-        self.it_activity_sort_var = tk.IntVar()
-        self.it_activity_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Nombre',
-                                                     command=lambda: self.sort_items_event('name'))
-        self.it_activity_sort_var.set(1)
-        self.it_activity_sort_chbox.select()
-        self.it_activity_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
-        self.it_teacher_sort_var = tk.IntVar()
-        self.it_teacher_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
-                                                    command=lambda: self.sort_items_event('provider'))
-        self.it_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.it_name_sort_var = tk.IntVar()
+        self.it_name_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Nombre',
+                                                 command=lambda: self.sort_items_event('name'))
+        self.it_name_sort_var.set(1)
+        self.it_name_sort_chbox.select()
+        self.it_name_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
+        # self.it_teacher_sort_var = tk.IntVar()
+        # self.it_teacher_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
+        #                                             command=lambda: self.sort_items_event('provider'))
+        # self.it_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
         self.it_inverse_sort_var = tk.IntVar()
         self.it_inverse_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Invertir orden',
                                                     command=lambda: self.sort_items_event('inverse'))
@@ -341,6 +358,7 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def clients_tree_update(self):
+        self.sort_clients()
         self.clients_tree.clear_tree()
         if self.search_isactive:
             for client in self.searched_clients:
@@ -521,6 +539,7 @@ class GestionEspacioAbierto:
         self.groups_frame.tkraise()
 
     def groups_tree_update(self):
+        self.sort_groups()
         self.groups_tree.clear_tree()
         self.groups_tree.add_objects(self.groups)
 
@@ -634,6 +653,38 @@ class GestionEspacioAbierto:
     def items_list_window(self):
         self.items_frame.tkraise()
 
+    def items_tree_update(self):
+        self.sort_items()
+        self.items_tree.clear_tree()
+        self.items_tree.add_objects(self.items)
+
+    def sort_items(self):
+        pass
+        # def normal_activity_sort(groups):
+        #     groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+        #
+        # def inverse_activity_sort(groups):
+        #     groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
+        #     groups.reverse()
+        #
+        # def normal_teacher_sort(groups):
+        #     groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+        #
+        # def inverse_teacher_sort(groups):
+        #     groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
+        #     groups.reverse()
+        #
+        # if self.gr_inverse_sort_var.get() is 0:
+        #     if self.gr_activity_sort_var.get() is 1:
+        #         normal_activity_sort(self.groups)
+        #     elif self.gr_teacher_sort_var.get() is 1:
+        #         normal_teacher_sort(self.groups)
+        # else:
+        #     if self.gr_activity_sort_var.get() is 1:
+        #         inverse_activity_sort(self.groups)
+        #     elif self.gr_teacher_sort_var.get() is 1:
+        #         inverse_teacher_sort(self.groups)
+
     def sort_items_event(self, invoker):
         pass
 
@@ -649,6 +700,16 @@ class GestionEspacioAbierto:
     def delete_item(self):
         pass
 
+    def show_references_event(self):
+        if self.show_references_items_var is 0:
+            self.show_references_button.config(text='Ocultar Referencias')
+            self.items_tree.modify_header([1, 1, 1, 1, 1, 1, 1, 1])
+            self.show_references_items_var = 1
+        else:
+            self.show_references_button.config(text='Mostrar Referencias')
+            self.items_tree.modify_header([1, 1, 1, 1, 0, 0, 1, 1])
+            self.show_references_items_var = 0
+
     # GENERAL FUNCTIONALITY
     def export_selection(self, object_type):
         if object_type is cl.Alumn:
@@ -662,7 +723,10 @@ class GestionEspacioAbierto:
             self.popup_root.mainloop()
             self.popup_root.destroy()
         elif object_type is it.Item:
-            pass
+            self.popup_root = TkSecure()
+            popup = ExportUI(self.popup_root, self.items_tree.objects, it.Item)
+            self.popup_root.mainloop()
+            self.popup_root.destroy()
 
     def check_integrity_database(self):
         for alumn in self.alumns:
@@ -690,6 +754,7 @@ class GestionEspacioAbierto:
         io.write_clients(file_clients, self.clients, cl.Client)
         io.write_clients(file_alumns, self.alumns, cl.Alumn)
         io.write_groups(file_groups, self.groups)
+        io.write_items(file_items, self.items)
 
     def close_program(self):
         self.check_integrity_database()
@@ -748,9 +813,6 @@ class ClientUI:
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
-            original_geometry = [600, 220]
-            str_original_geometry = map(str, original_geometry)
-            self.popup_root.geometry('x'.join(str_original_geometry))
             # FIELDS
             pay_bank_field = tk.Label(self.main_frame, text='Domicilia?:')
             pay_bank_field.grid(row=8, column=0, sticky=tk.N + tk.W)
@@ -792,7 +854,7 @@ class ClientUI:
                     group_checkbox.deselect()
 
     def groups_frame_init(self):
-        self.groups_frame = tk.Frame(self.main_frame, width=600)
+        self.groups_frame = tk.Frame(self.main_frame)
         self.groups_frame.grid(row=0, rowspan=20, column=3, columnspan=2, sticky=tk.N + tk.W + tk.E + tk.S,
                                padx=(20, 0))
 
@@ -806,9 +868,6 @@ class ModifyClientUI(ClientUI):
         self.saved = True
         if client.name is '':
             self.popup_root.title('Nuevo Cliente')
-        # original_geometry = [300, 300]
-        # str_original_geometry = map(str, original_geometry)
-        # self.popup_root.geometry('x'.join(str_original_geometry))
         self.client = client
         self.new_id = new_id
         self.available_groups = available_groups
@@ -841,9 +900,6 @@ class ModifyClientUI(ClientUI):
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
-            original_geometry = [900, 320]
-            str_original_geometry = map(str, original_geometry)
-            self.popup_root.geometry('x'.join(str_original_geometry))
             self.pay_bank_new_var = tk.IntVar()
             self.pay_bank_new = tk.Checkbutton(self.main_frame, variable=self.pay_bank_new_var,
                                                command=lambda: self.press_pay_bank_ans())
@@ -918,7 +974,7 @@ class ModifyClientUI(ClientUI):
                 self.groups_id_list.append(group.id)
 
         save_button = tk.Button(self.main_frame, text='Guardar', command=self.check_save)
-        self.save_button_row = 15
+        self.save_button_row = 21
         save_button.grid(row=self.save_button_row, column=0, columnspan=5, sticky=tk.S)
         if type(self.client) is cl.Alumn:
             trans_label = 'Transformar en Paciente'
@@ -1086,7 +1142,7 @@ class ModifyClientUI(ClientUI):
         if self.client.email != self.email_new.get(): self.saved = False
         if type(self.client) is cl.Alumn:
             if self.client.pay_bank != self.pay_bank_new_var.get(): self.saved = False
-            if self.client.bank_acc != self.bank_acc_new: self.saved = False
+            if self.client.bank_acc != self.bank_acc_new.get(): self.saved = False
             if self.month_var.get() is 1:
                 pay_period_new = 0
             elif self.trimonth_var.get() is 1:
@@ -1123,9 +1179,6 @@ class GroupUI:
         self.root = root
         self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' ' + str(group.days) + ' '
                         + str(group.time_start))
-        # original_geometry = [1150, 500]
-        # str_original_geometry = map(str, original_geometry)
-        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.group = group
         self.available_clients = copy.copy(available_clients)
@@ -1167,12 +1220,12 @@ class GroupUI:
         self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
 
         # MEMBERS LIST
-        self.members_frame = tk.Frame(self.root, width=800)
+        self.members_frame = tk.Frame(self.root)
         self.members_frame.grid(row=0, rowspan=20, column=3, sticky=tk.N + tk.W + tk.E + tk.S)
         members_label = tk.Label(self.members_frame, text='Miembros: ')
         members_label.grid(row=0, column=0, sticky=tk.N + tk.W)
         members_tree_frame = tk.Frame(self.members_frame)
-        members_tree_frame.grid(row=1, column=0)
+        members_tree_frame.grid(row=2, column=0)
         self.group_members = list()
         for index in reversed(range(0, len(self.available_clients))):
             if self.group.id in self.available_clients[index].groups:
@@ -1288,7 +1341,7 @@ class ModifyGroupUI(GroupUI):
 
         # AVAILABLE CLIENTS LISTBOX
         buttons_frame = tk.Frame(self.members_frame)
-        buttons_frame.grid(row=1, column=1)
+        buttons_frame.grid(row=2, column=1)
         self.add_button = tk.Button(buttons_frame, text='<< Añadir <<', width=15)
         self.add_button.bind('<Button-1>', self.add_member)
         self.add_button.grid(row=0, column=0, sticky=tk.S)
@@ -1298,13 +1351,47 @@ class ModifyGroupUI(GroupUI):
         available_clients_label = tk.Label(self.members_frame, text='Alumnos Disponibles: ')
         available_clients_label.grid(row=0, column=2, sticky=tk.N + tk.W)
         available_clients_table_frame = tk.Frame(self.members_frame)
-        available_clients_table_frame.grid(row=1, column=2, sticky=tk.N + tk.W)
+        available_clients_table_frame.grid(row=2, column=2, sticky=tk.N + tk.W)
         self.available_clients_tree = tree.TreeObject(available_clients_table_frame, self.available_clients, cl.Alumn,
                                                       [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+
+        # Search Box
+        search_frame = tk.Frame(self.members_frame)
+        search_frame.grid(row=1, column=2, sticky='ne')
+        self.cl_search_entry = tk.Entry(search_frame)
+        self.cl_search_entry.grid(row=0, column=0, padx=(25, 0), sticky='e')
+        self.cl_search_button = tk.Button(search_frame, text='Buscar', command=self.search_available_clients)
+        self.cl_search_button.grid(row=0, column=1, sticky='ne')
+        self.cl_search_clear_button = tk.Button(search_frame, text='Resetear',
+                                                command=self.clear_search)
+        self.cl_search_clear_button.grid(row=0, column=2, sticky='ne')
+        self.search_isactive = False
 
         save_button = tk.Button(self.root, text='Guardar', command=self.check_save)
         self.save_button_row = 10
         save_button.grid(row=self.save_button_row, column=0, columnspan=3, sticky=tk.S)
+
+    def search_available_clients(self):
+        self.search_isactive = True
+        keyword = self.cl_search_entry.get()
+        names_surnames = list(map(lambda client: client.name + ' ' + client.surname, self.available_clients))
+        self.searched_clients = list()
+        counter = 0
+        for name_surname in names_surnames:
+            if keyword.lower() in name_surname.lower():
+                self.searched_clients.append(self.available_clients[counter])
+            counter = counter + 1
+        self.searched_clients = list(set(self.searched_clients))
+        self.tree_search_update()
+
+    def tree_search_update(self):
+        self.available_clients_tree.clear_tree()
+        self.available_clients_tree.add_objects(self.searched_clients)
+
+    def clear_search(self):
+        self.available_clients_tree.clear_tree()
+        self.available_clients_tree.add_objects(self.available_clients)
+        self.search_isactive = False
 
     def add_member(self, event):
         self.saved = False
@@ -1314,6 +1401,7 @@ class ModifyGroupUI(GroupUI):
             client.groups.add(self.group.id)
             self.available_clients_tree.delete_objects([client])
             self.members_tree.add_objects([client])
+        self.available_clients.remove(client)
 
     def delete_member(self, event):
         self.saved = False
@@ -1323,6 +1411,7 @@ class ModifyGroupUI(GroupUI):
             client.groups.discard(self.group.id)
             self.members_tree.delete_objects([client])
             self.available_clients_tree.add_objects([client])
+        self.available_clients.append(client)
 
     def press_days_checkbox(self, invoker):
         if invoker is 'monday':
@@ -1435,7 +1524,6 @@ class ModifyGroupUI(GroupUI):
         return no_semicolon
 
     def check_differences_ans_new(self):
-        self.saved = True
         if self.group.name_activity != self.name_activity_new.get(): self.saved = False
         if self.group.name_teacher != self.name_teacher_new.get(): self.saved = False
         if self.group.price != float(self.price_new.get()): self.saved = False
@@ -1492,13 +1580,18 @@ class ModifyGroupUI(GroupUI):
             super().close_window()
 
 
+class ItemUI:
+    pass
+
+
+class ModifyItemUI(ItemUI):
+    pass
+
+
 class ExportUI:
     def __init__(self, root, objects, object_type):
         self.root = root
         self.root.title('Exportar')
-        # original_geometry = [1000, 500]
-        # str_original_geometry = map(str, original_geometry)
-        # self.root.geometry('x'.join(str_original_geometry))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.export_header = copy.copy(object_type.default_header_map)
         self.export_header[-1] = 0  # avoid exporting sets. they are separeted by ','
@@ -1510,13 +1603,13 @@ class ExportUI:
         self.main_frame.rowconfigure(3, weight=1)
         selection_label = tk.Label(self.main_frame, text='Selecciona los campos que quieres exportar: ')
         selection_label.grid(row=0, sticky='nw')
-        checkboxes_frame = tk.Frame(self.main_frame)
-        checkboxes_frame.grid(row=1, sticky='nw')
+        self.checkboxes_frame = tk.Frame(self.main_frame)
+        self.checkboxes_frame.grid(row=1, sticky='nw')
         self.fields_var = list()
         self.fields_checkboxes = list()
         for field in object_type.tree_header[0:-1]:
             field_var = tk.IntVar()
-            field_checkbox = tk.Checkbutton(checkboxes_frame, text=field)
+            field_checkbox = tk.Checkbutton(self.checkboxes_frame, text=field)
             field_checkbox.bind('<Button-1>', self.press_field_checkbox)
             field_checkbox.pack(side=tk.LEFT, padx=(10, 0))
             field_var.set(1)
@@ -1533,7 +1626,8 @@ class ExportUI:
         self.saveas_button.grid(row=4, sticky='s', pady=(10, 10))
 
     def saveas(self):
-        filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('comma separated files', '.csv')],
+        filename = tkfile.asksaveasfile(parent=self.root,
+                                        filetypes=[('all files', '.*'), ('comma separated files', '.csv')],
                                         initialfile='export.csv')
         if filename:
             filename = filename.name
@@ -1553,6 +1647,7 @@ class ExportUI:
                     self.export_header[counter] = 0
             counter = counter + 1
         self.result_tree.modify_header(self.export_header)
+        pass
 
     def close_window(self):
         self.root.quit()

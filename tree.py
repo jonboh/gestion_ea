@@ -20,11 +20,11 @@ class TreeObject:
 
         self.tree_ids = list()
         self.tree = ttk.Treeview(self.main_frame)
-        vsb = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.tree.yview)
-        vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        hsb = ttk.Scrollbar(self.main_frame, orient="horizontal", command=self.tree.xview)
-        hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        self.vsb = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.tree.yview)
+        self.vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.hsb = ttk.Scrollbar(self.main_frame, orient="horizontal", command=self.tree.xview)
+        self.hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.tree.configure(yscrollcommand=self.vsb.set, xscrollcommand=self.hsb.set)
         self.tree.pack(fill='both', expand=True)
         self.tree.config(columns=self.header, show='headings')
 
@@ -67,22 +67,30 @@ class TreeObject:
         for entry, isinmap in zip(self.master_type.tree_header, self.header_map):
             if isinmap:
                 self.header.append(entry)
-        # Redraw headings
+        object_list = self.objects
+        self.vsb.destroy()
+        self.hsb.destroy()
+        self.clear_tree()
+        self.tree.destroy()
+        self.tree = ttk.Treeview(self.main_frame)
+        self.vsb = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.tree.yview)
+        self.vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.hsb = ttk.Scrollbar(self.main_frame, orient="horizontal", command=self.tree.xview)
+        self.hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.tree.configure(yscrollcommand=self.vsb.set, xscrollcommand=self.hsb.set)
+        self.tree.pack(fill='both', expand=True)
         self.tree.config(columns=self.header, show='headings')
-        for col in self.header:
-            self.tree.heading(col, text=col.title())
-            self.tree.column(col, width=tkFont.Font().measure(col.title()))
-        # Update rows values
-        for child, object_ in zip(self.tree.get_children(), self.objects):
-            self.tree.item(child, values=object_.tree_entries(self.header_map))
+
         self.size_columns()
 
+        self.add_objects(object_list)
+
     def size_columns(self):
-        total_size = 0
         for col in self.header:
-            self.tree.heading(col, text=col.title())
-            self.tree.column(col, width=max(tkFont.Font().measure(col.title()), 80))
-            total_size = total_size + max(tkFont.Font().measure(col.title()), 80)
+            self.tree.heading(col, text=col)
+            self.tree.column(col,width=100)
+            self.tree.column(col, minwidth=20, stretch=True)
+        _ = 1
 
     def _theres_selection(self):
         if len(self.tree.selection()) is 0:
