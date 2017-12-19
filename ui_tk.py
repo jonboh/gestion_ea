@@ -1077,7 +1077,7 @@ class ModifyClientUI(ClientUI):
         if self.client.email != self.email_new.get(): self.saved = False
         if type(self.client) is cl.Alumn:
             if self.client.pay_bank != self.pay_bank_new_var.get(): self.saved = False
-            if self.client.bank_acc != self.bank_acc_new: self.saved = False
+            if self.client.bank_acc != self.bank_acc_new.get(): self.saved = False
             if self.month_var.get() is 1:
                 pay_period_new = 0
             elif self.trimonth_var.get() is 1:
@@ -1160,7 +1160,7 @@ class GroupUI:
         members_label = tk.Label(self.members_frame, text='Miembros: ')
         members_label.grid(row=0, column=0, sticky=tk.N + tk.W)
         members_tree_frame = tk.Frame(self.members_frame)
-        members_tree_frame.grid(row=1, column=0)
+        members_tree_frame.grid(row=2, column=0)
         self.group_members = list()
         for index in reversed(range(0, len(self.available_clients))):
             if self.group.id in self.available_clients[index].groups:
@@ -1276,7 +1276,7 @@ class ModifyGroupUI(GroupUI):
 
         # AVAILABLE CLIENTS LISTBOX
         buttons_frame = tk.Frame(self.members_frame)
-        buttons_frame.grid(row=1, column=1)
+        buttons_frame.grid(row=2, column=1)
         self.add_button = tk.Button(buttons_frame, text='<< Añadir <<', width=15)
         self.add_button.bind('<Button-1>', self.add_member)
         self.add_button.grid(row=0, column=0, sticky=tk.S)
@@ -1286,13 +1286,47 @@ class ModifyGroupUI(GroupUI):
         available_clients_label = tk.Label(self.members_frame, text='Alumnos Disponibles: ')
         available_clients_label.grid(row=0, column=2, sticky=tk.N + tk.W)
         available_clients_table_frame = tk.Frame(self.members_frame)
-        available_clients_table_frame.grid(row=1, column=2, sticky=tk.N + tk.W)
+        available_clients_table_frame.grid(row=2, column=2, sticky=tk.N + tk.W)
         self.available_clients_tree = tree.TreeObject(available_clients_table_frame, self.available_clients, cl.Alumn,
                                                       [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+
+        # Search Box
+        search_frame = tk.Frame(self.members_frame)
+        search_frame.grid(row=1, column=2, sticky='ne')
+        self.cl_search_entry = tk.Entry(search_frame)
+        self.cl_search_entry.grid(row=0, column=0, padx=(25, 0), sticky='e')
+        self.cl_search_button = tk.Button(search_frame, text='Buscar', command=self.search_available_clients)
+        self.cl_search_button.grid(row=0, column=1, sticky='ne')
+        self.cl_search_clear_button = tk.Button(search_frame, text='Resetear',
+                                                command=self.clear_search)
+        self.cl_search_clear_button.grid(row=0, column=2, sticky='ne')
+        self.search_isactive = False
 
         save_button = tk.Button(self.root, text='Guardar', command=self.check_save)
         self.save_button_row = 10
         save_button.grid(row=self.save_button_row, column=0, columnspan=3, sticky=tk.S)
+
+    def search_available_clients(self):
+        self.search_isactive = True
+        keyword = self.cl_search_entry.get()
+        names_surnames = list(map(lambda client: client.name + ' ' + client.surname, self.available_clients))
+        self.searched_clients = list()
+        counter = 0
+        for name_surname in names_surnames:
+            if keyword.lower() in name_surname.lower():
+                self.searched_clients.append(self.available_clients[counter])
+            counter = counter + 1
+        self.searched_clients = list(set(self.searched_clients))
+        self.tree_search_update()
+
+    def tree_search_update(self):
+        self.available_clients_tree.clear_tree()
+        self.available_clients_tree.add_objects(self.searched_clients)
+
+    def clear_search(self):
+        self.available_clients_tree.clear_tree()
+        self.available_clients_tree.add_objects(self.available_clients)
+        self.search_isactive = False
 
     def add_member(self, event):
         self.saved = False
@@ -1302,6 +1336,7 @@ class ModifyGroupUI(GroupUI):
             client.groups.add(self.group.id)
             self.available_clients_tree.delete_objects([client])
             self.members_tree.add_objects([client])
+        self.available_clients.remove(client)
 
     def delete_member(self, event):
         self.saved = False
@@ -1311,6 +1346,7 @@ class ModifyGroupUI(GroupUI):
             client.groups.discard(self.group.id)
             self.members_tree.delete_objects([client])
             self.available_clients_tree.add_objects([client])
+        self.available_clients.append(client)
 
     def press_days_checkbox(self, invoker):
         if invoker is 'monday':
@@ -1423,7 +1459,6 @@ class ModifyGroupUI(GroupUI):
         return no_semicolon
 
     def check_differences_ans_new(self):
-        self.saved = True
         if self.group.name_activity != self.name_activity_new.get(): self.saved = False
         if self.group.name_teacher != self.name_teacher_new.get(): self.saved = False
         if self.group.price != float(self.price_new.get()): self.saved = False
@@ -1518,7 +1553,8 @@ class ExportUI:
         self.saveas_button.grid(row=4, sticky='s', pady=(10, 10))
 
     def saveas(self):
-        filename = tkfile.asksaveasfile(parent=self.root, filetypes=[('all files', '.*'), ('comma separated files', '.csv')],
+        filename = tkfile.asksaveasfile(parent=self.root,
+                                        filetypes=[('all files', '.*'), ('comma separated files', '.csv')],
                                         initialfile='export.csv')
         if filename:
             filename = filename.name
