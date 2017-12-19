@@ -119,7 +119,7 @@ class GestionEspacioAbierto:
         self.cl_search_clear_button = tk.Button(clients_buttons_frame, text='Resetear',
                                                 command=lambda: self.clients_checkbox_update('Clients'))
         self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
-        self.search_isactive = False
+        self.cl_search_isactive = False
         # Clients Tree
         clients_table_frame = tk.Frame(self.clients_frame, background=self.bg_color)
         clients_table_frame.grid(row=1, column=0, columnspan=2, sticky='nwes')
@@ -211,7 +211,7 @@ class GestionEspacioAbierto:
         self.list_buttons(items_list_buttons_frame, it.Item)
 
         self.items_tree_ids = list()
-        self.items_tree = tree.TreeObject(items_table_frame, list(), it.Item)
+        self.items_tree = tree.TreeObject(items_table_frame, list(), it.Item, [1, 1, 1, 1, 0, 0, 1, 1])
         self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
 
         items_list_nav_frame = tk.Frame(self.items_frame, background=self.bg_color)
@@ -225,14 +225,14 @@ class GestionEspacioAbierto:
                                                 command=self.show_references_event)
         self.show_references_button.grid(row=0, column=3, sticky='ne')
         # Search Box
-        self.cl_search_entry = tk.Entry(items_buttons_frame)
-        self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
-        self.cl_search_button = tk.Button(items_buttons_frame, text='Buscar', command=self.search_clients)
-        self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
-        self.cl_search_clear_button = tk.Button(items_buttons_frame, text='Resetear',
-                                                command=lambda: self.clients_checkbox_update('Clients'))
-        self.cl_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
-        self.search_isactive = False
+        self.it_search_entry = tk.Entry(items_buttons_frame)
+        self.it_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
+        self.it_search_button = tk.Button(items_buttons_frame, text='Buscar', command=self.search_items)
+        self.it_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
+        self.it_search_clear_button = tk.Button(items_buttons_frame, text='Resetear',
+                                                command=lambda: self.clear_search_items)
+        self.it_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
+        self.it_search_isactive = False
 
         # Sorters
         items_sorters_frame = tk.Frame(self.items_frame)
@@ -242,13 +242,14 @@ class GestionEspacioAbierto:
         self.it_name_sort_var = tk.IntVar()
         self.it_name_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Nombre',
                                                  command=lambda: self.sort_items_event('name'))
-        self.it_name_sort_var.set(1)
+        self.it_name_sort_var.set(0)
         self.it_name_sort_chbox.select()
         self.it_name_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
-        # self.it_teacher_sort_var = tk.IntVar()
-        # self.it_teacher_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
-        #                                             command=lambda: self.sort_items_event('provider'))
-        # self.it_teacher_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.it_provider_sort_var = tk.IntVar()
+        self.it_provider_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
+                                                     command=lambda: self.sort_items_event('provider'))
+        self.it_provider_sort_var.set(1)
+        self.it_provider_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
         self.it_inverse_sort_var = tk.IntVar()
         self.it_inverse_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Invertir orden',
                                                     command=lambda: self.sort_items_event('inverse'))
@@ -360,7 +361,7 @@ class GestionEspacioAbierto:
     def clients_tree_update(self):
         self.sort_clients()
         self.clients_tree.clear_tree()
-        if self.search_isactive:
+        if self.cl_search_isactive:
             for client in self.searched_clients:
                 self.clients_tree.add_objects([client])
         else:
@@ -438,7 +439,7 @@ class GestionEspacioAbierto:
         self.pa_chbox_var.set(0)
         self.al_chbox_var.set(0)
         self.al_chbox_bank_var.set(0)
-        self.search_isactive = True
+        self.cl_search_isactive = True
         keyword = self.cl_search_entry.get()
         clients_alumns = self.clients + self.alumns
         names_surnames = list(map(lambda client: client.name + ' ' + client.surname, clients_alumns))
@@ -452,7 +453,7 @@ class GestionEspacioAbierto:
         self.clients_tree_update()
 
     def clear_search_clients(self):
-        self.search_isactive = False
+        self.cl_search_isactive = False
         self.cl_search_entry.delete(0, tk.END)
         self.clients_tree_update()
 
@@ -467,7 +468,8 @@ class GestionEspacioAbierto:
             elif type(client) is cl.Alumn:
                 popup = ClientUI(self.popup_root, client, self.groups)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
 
     def new_client(self):
         id_new_element = gr.available_id(self.clients + self.alumns)
@@ -479,7 +481,8 @@ class GestionEspacioAbierto:
         else:
             popup = ModifyClientUI(self.popup_root, cl.Alumn(), id_new_element, self.groups)
         self.popup_root.mainloop()
-        self.popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
         if popup.new:
             if type(popup.client) is cl.Client:
                 self.clients.append(popup.client)
@@ -496,7 +499,8 @@ class GestionEspacioAbierto:
             self.popup_root = TkSecure()
             popup = ModifyClientUI(self.popup_root, client, None, self.groups)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
             if popup.new:
                 # remove in_client from list
                 if type(client) is cl.Client:
@@ -519,7 +523,8 @@ class GestionEspacioAbierto:
             self.popup_root = TkSecure()
             popup = AreYouSureUI(self.popup_root)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
             if popup.answer:
                 if type(client) is cl.Client:
                     self.clients.remove(client)
@@ -601,7 +606,8 @@ class GestionEspacioAbierto:
             self.popup_root = TkSecure()
             popup = GroupUI(self.popup_root, group, self.alumns)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
 
     def new_group(self):
         id_new_element = gr.available_id(self.groups)
@@ -610,7 +616,8 @@ class GestionEspacioAbierto:
         self.popup_root = TkSecure()
         popup = ModifyGroupUI(self.popup_root, gr.Group(), id_new_element, self.alumns)
         self.popup_root.mainloop()
-        self.popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
         if popup.new:
             self.groups.append(popup.group)
         self.groups_tree_update()
@@ -624,7 +631,8 @@ class GestionEspacioAbierto:
             self.popup_root = TkSecure()
             popup = ModifyGroupUI(self.popup_root, group, None, self.alumns)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
             if popup.new:
                 self.groups.remove(group)
                 self.groups.append(popup.group)
@@ -637,7 +645,8 @@ class GestionEspacioAbierto:
         self.popup_root = TkSecure()
         popup = AreYouSureUI(self.popup_root)
         self.popup_root.mainloop()
-        self.popup_root.destroy()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
         if popup.answer:
             self.groups.remove(group)
             self.purge_group_from_alumns(group)
@@ -658,44 +667,100 @@ class GestionEspacioAbierto:
         self.items_tree.clear_tree()
         self.items_tree.add_objects(self.items)
 
-    def sort_items(self):
+    def search_items(self):
         pass
-        # def normal_activity_sort(groups):
-        #     groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
-        #
-        # def inverse_activity_sort(groups):
-        #     groups.sort(key=lambda group: (group.name_activity, group.name_teacher))
-        #     groups.reverse()
-        #
-        # def normal_teacher_sort(groups):
-        #     groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
-        #
-        # def inverse_teacher_sort(groups):
-        #     groups.sort(key=lambda group: (group.name_teacher, group.name_activity))
-        #     groups.reverse()
-        #
-        # if self.gr_inverse_sort_var.get() is 0:
-        #     if self.gr_activity_sort_var.get() is 1:
-        #         normal_activity_sort(self.groups)
-        #     elif self.gr_teacher_sort_var.get() is 1:
-        #         normal_teacher_sort(self.groups)
-        # else:
-        #     if self.gr_activity_sort_var.get() is 1:
-        #         inverse_activity_sort(self.groups)
-        #     elif self.gr_teacher_sort_var.get() is 1:
-        #         inverse_teacher_sort(self.groups)
+
+    def clear_search_items(self):
+        pass
+
+    def sort_items(self):
+        def normal_name_sort(items):
+            items.sort(key=lambda item: (item.name_activity, item.name_teacher))
+
+        def inverse_name_sort(items):
+            items.sort(key=lambda item: (item.name_activity, item.name_teacher))
+            items.reverse()
+
+        def normal_provider_sort(items):
+            items.sort(key=lambda item: (item.name_teacher, item.name_activity))
+
+        def inverse_provider_sort(items):
+            items.sort(key=lambda item: (item.name_teacher, item.name_activity))
+            items.reverse()
+
+        if self.it_inverse_sort_var.get() is 0:
+            if self.it_name_sort_var.get() is 1:
+                normal_name_sort(self.items)
+            elif self.it_provider_sort_var.get() is 1:
+                normal_provider_sort(self.items)
+        else:
+            if self.it_name_sort_var.get() is 1:
+                inverse_name_sort(self.items)
+            elif self.it_provider_sort_var.get() is 1:
+                inverse_provider_sort(self.items)
 
     def sort_items_event(self, invoker):
-        pass
+        def widget_logic():
+            if invoker is 'name':
+                self.it_name_sort_var.set(1)
+                self.it_name_sort_chbox.select()
+                self.it_provider_sort_var.set(0)
+                self.it_provider_sort_chbox.deselect()
+            elif invoker is 'provider':
+                self.it_provider_sort_var.set(1)
+                self.it_provider_sort_chbox.select()
+                self.it_name_sort_var.set(0)
+                self.it_name_sort_chbox.deselect()
+            elif invoker is 'inverse':
+                if self.it_inverse_sort_var.get() is 1:
+                    self.it_inverse_sort_var.set(0)
+                    self.it_inverse_sort_chbox.deselect()
+                else:
+                    self.it_inverse_sort_var.set(1)
+                    self.it_inverse_sort_chbox.select()
+
+        widget_logic()
+        self.sort_groups()
+        self.items_tree_update()
 
     def view_item(self):
-        pass
+        item = self.items_tree.selection()
+        if not item is -1:
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = ItemUI(self.popup_root, item)
+            self.popup_root.mainloop()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
 
     def new_item(self):
-        pass
+        id_new_element = gr.available_id(self.items)
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
+        popup = ModifyItemUI(self.popup_root, it.Item(), id_new_element)
+        self.popup_root.mainloop()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        if popup.new:
+            self.items.append(popup.item)
+        self.items_tree_update()
 
     def modify_item(self):
-        pass
+        item = self.items_tree.selection()
+        if not item is -1:
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            self.popup_root = TkSecure()
+            popup = ModifyGroupUI(self.popup_root, item, None)
+            self.popup_root.mainloop()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
+            if popup.new:
+                self.groups.remove(item)
+                self.groups.append(popup.item)
+            self.groups_tree_update()
 
     def delete_item(self):
         pass
@@ -716,17 +781,20 @@ class GestionEspacioAbierto:
             self.popup_root = TkSecure()
             popup = ExportUI(self.popup_root, self.clients_tree.objects, cl.Alumn)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
         elif object_type is gr.Group:
             self.popup_root = TkSecure()
             popup = ExportUI(self.popup_root, self.groups_tree.objects, gr.Group)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
         elif object_type is it.Item:
             self.popup_root = TkSecure()
             popup = ExportUI(self.popup_root, self.items_tree.objects, it.Item)
             self.popup_root.mainloop()
-            self.popup_root.destroy()
+            if self.popup_root.isalive:
+                self.popup_root.destroy()
 
     def check_integrity_database(self):
         for alumn in self.alumns:
@@ -1581,11 +1649,183 @@ class ModifyGroupUI(GroupUI):
 
 
 class ItemUI:
-    pass
+    def __init__(self, root, item):
+        self.root = root
+        self.item = item
+        self.root.title(item.name)
+        self.root.protocol("WM_DELETE_WINDOW", self.close_window)
+
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(fill='both', expand=True)
+
+        # FIELDS
+        name_field = tk.Label(self.main_frame, text='Producto: ')
+        name_field.grid(row=0, column=0, sticky=tk.N + tk.W)
+        quantity_field = tk.Label(self.main_frame, text='Cantidad: ')
+        quantity_field.grid(row=1, column=0, sticky=tk.N + tk.W)
+        distributor_field = tk.Label(self.main_frame, text='Distribuidor: ')
+        distributor_field.grid(row=2, column=0, sticky=tk.N + tk.W)
+        provider_field = tk.Label(self.main_frame, text='Proveedor: ')
+        provider_field.grid(row=3, column=0, sticky=tk.N + tk.W)
+        ref_dist_field = tk.Label(self.main_frame, text='Referencia Dist.:')
+        ref_dist_field.grid(row=4, column=0, sticky=tk.N + tk.W)
+        ref_ea_field = tk.Label(self.main_frame, text='Referencia EA: ')
+        ref_ea_field.grid(row=5, column=0, sticky=tk.N + tk.W)
+        price_buy_field = tk.Label(self.main_frame, text='Precio Compra: ')
+        price_buy_field.grid(row=6, column=0, sticky=tk.N + tk.W)
+        price_pvp_field = tk.Label(self.main_frame, text='PVP: ')
+        price_pvp_field.grid(row=7, column=0, sticky=tk.N + tk.W)
+        id_field = tk.Label(self.main_frame, text='ID: ')
+        id_field.grid(row=8, column=0, sticky='nw')
+
+        # FIELD VALUES
+        self.name_ans = tk.Label(self.main_frame, text=self.item.name)
+        self.name_ans.grid(row=0, column=1, sticky=tk.N + tk.W)
+        self.quantity_ans = tk.Label(self.main_frame, text=self.item.quantity)
+        self.quantity_ans.grid(row=1, column=1, sticky=tk.N + tk.W)
+        self.distributor_ans = tk.Label(self.main_frame, text=self.item.distributor)
+        self.distributor_ans.grid(row=2, column=1, sticky=tk.N + tk.W)
+        self.provider_ans = tk.Label(self.main_frame, text=self.item.provider)
+        self.provider_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
+        self.ref_dist_ans = tk.Label(self.main_frame, text=self.item.ref_dist)
+        self.ref_dist_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
+        self.ref_ea_ans = tk.Label(self.main_frame, text=self.item.ref_ea)
+        self.ref_ea_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
+        self.price_buy_ans = tk.Label(self.main_frame, text=self.item.price_buy)
+        self.price_buy_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+        self.price_pvp_ans = tk.Label(self.main_frame, text=self.item.price_pvp)
+        self.price_pvp_ans.grid(row=7, column=1, sticky='nw')
+        self.id_ans = tk.Label(self.main_frame, text=self.item.id)
+        self.id_ans.grid(row=8, column=1)
+
+    def close_window(self):
+        self.root.quit()
 
 
 class ModifyItemUI(ItemUI):
-    pass
+    def __init__(self, root, item, new_id=None):
+        super().__init__(root, item)
+        self.saved = True
+        if item.name is '':
+            self.root.title('Nuevo Producto')
+        self.item = item
+        self.new_id = new_id
+        self.new = False
+
+        # NEW FIELD VALUES
+        self.name_new = tk.Entry(self.main_frame)
+        self.name_new.delete(0, tk.END)
+        self.name_new.insert(0, self.item.name)
+        self.name_new.grid(row=0, column=2, sticky=tk.N + tk.W)
+        self.quantity_new = tk.Entry(self.main_frame)
+        self.quantity_new.delete(0, tk.END)
+        self.quantity_new.insert(0, self.item.quantity)
+        self.quantity_new.grid(row=1, column=2, sticky=tk.N + tk.W)
+        self.distributor_new = tk.Entry(self.main_frame)
+        self.distributor_new.delete(0, tk.END)
+        self.distributor_new.insert(0, self.item.distributor)
+        self.distributor_new.grid(row=2, column=2, sticky=tk.N + tk.W)
+        self.provider_new = tk.Entry(self.main_frame)
+        self.provider_new.delete(0, tk.END)
+        self.provider_new.insert(0, self.item.provider)
+        self.provider_new.grid(row=3, column=2, sticky=tk.N + tk.W)
+        self.ref_dist_new = tk.Entry(self.main_frame)
+        self.ref_dist_new.delete(0, tk.END)
+        self.ref_dist_new.insert(0, self.item.ref_dist)
+        self.ref_dist_new.grid(row=4, column=2, sticky=tk.N + tk.W)
+        self.ref_ea_new = tk.Entry(self.main_frame)
+        self.ref_ea_new.delete(0, tk.END)
+        self.ref_ea_new.insert(0, self.item.ref_ea)
+        self.ref_ea_new.grid(row=5, column=2, sticky=tk.N + tk.W)
+        self.price_buy_new = tk.Entry(self.main_frame)
+        self.price_buy_new.delete(0, tk.END)
+        self.price_buy_new.insert(0, self.item.price_buy)
+        self.price_buy_new.grid(row=6, column=2, sticky=tk.N + tk.W)
+        self.price_pvp_new = tk.Entry(self.main_frame)
+        self.price_pvp_new.delete(0, tk.END)
+        self.price_pvp_new.insert(0, self.item.price_pvp)
+        self.price_pvp_new.grid(row=7, column=2, sticky=tk.N + tk.W)
+
+        save_button = tk.Button(self.main_frame, text='Guardar', command=self.check_save)
+        self.save_button_row = 10
+        save_button.grid(row=self.save_button_row, column=0, columnspan=3, sticky=tk.S)
+
+    def info_integrity(self):
+        info_integrity = True
+        info_integrity = info_integrity * self.check_semicolons()
+        try:
+            int(self.quantity_new.get())
+            float(self.price_buy_new.get())
+            float(self.price_pvp_new.get())
+        except:
+            info_integrity = False
+        return info_integrity
+
+    def check_semicolons(self):
+        no_semicolon = True
+        var_list = [self.name_new.get(), self.quantity_new.get(), self.distributor_new.get(), self.provider_new.get(),
+                    self.ref_dist_new.get(), self.ref_ea_new.get(), self.price_buy_new.get(), self.price_pvp_new.get()]
+        for var in var_list:
+            no_semicolon = no_semicolon and not (';' in var)
+        return no_semicolon
+
+    def check_save(self):
+        if self.info_integrity():
+            self.item.name = self.name_new.get()
+            self.item.quantity = self.quantity_new.get()
+            self.item.distributor = self.distributor_new.get()
+            self.item.provider = self.provider_new.get()
+            self.item.ref_dist = self.ref_dist_new.get()
+            self.item.ref_ea = self.ref_ea_new.get()
+            self.item.price_buy = self.price_buy_new.get()
+            self.item.price_pvp = self.price_pvp_new.get()
+            self.update_answers()
+            self.new = True
+            self.saved = True
+        else:
+            error_label = tk.Label(self.root, text='Error al Guardar, revisa la informacion introducida.',
+                                   fg='red')
+            error_label.grid(row=self.save_button_row - 1, column=0, columnspan=3, sticky=tk.S)
+
+    def check_differences_ans_new(self):
+        self.saved = True
+        if self.item.name != self.name_new.get(): self.saved = False
+        if self.item.quantity != self.quantity_new.get(): self.saved = False
+        if self.item.distributor != self.distributor_new.get(): self.saved = False
+        if self.item.provider != self.provider_new.get(): self.saved = False
+        if self.item.ref_dist != self.ref_dist_new.get(): self.saved = False
+        if self.item.ref_ea != self.ref_ea_new.get(): self.saved = False
+        if self.item.price_buy != self.price_buy_new.get(): self.saved = False
+        if self.item.price_pvp != self.price_pvp_new.get(): self.saved = False
+
+    def update_answers(self):
+        self.name_ans.config(text=self.item.name)
+        self.quantity_ans.config(text=str(self.item.quantity))
+        self.distributor_ans.config(text=self.item.distributor)
+        self.provider_ans.config(text=self.item.provider)
+        self.ref_dist_ans.config(text=self.item.ref_dist)
+        self.ref_ea_ans.config(text=self.item.ref_ea)
+        self.price_buy_ans.config(text=str(self.item.price_buy))
+        self.price_pvp_ans.config(text=str(self.item.price_pvp))
+        self.id_ans.config(text=str(self.item.id))
+
+    def close_window(self):
+        self.check_differences_ans_new()
+        if not self.saved:
+            areusure_root = tk.Tk()
+            message1 = 'No has guardado, ¿Quieres guardar la información?'
+            message2 = ''
+            areusure = AreYouSureUI(areusure_root, message1, message2)
+            areusure_root.mainloop()
+            areusure_root.destroy()
+            if areusure.answer:
+                self.check_save()
+                if self.saved:
+                    super().close_window()
+            else:
+                super().close_window()
+        else:
+            super().close_window()
 
 
 class ExportUI:
