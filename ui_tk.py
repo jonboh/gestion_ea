@@ -69,6 +69,7 @@ class GestionEspacioAbierto:
         # UPDATE CLIENTS AND GROUPS LISTBOXES
         self.clients_tree_update()
         self.groups_tree_update()
+        self.items_tree_update()
 
         self.welcome_frame.tkraise()
 
@@ -212,7 +213,7 @@ class GestionEspacioAbierto:
 
         self.items_tree_ids = list()
         self.items_tree = tree.TreeObject(items_table_frame, list(), it.Item, [1, 1, 1, 1, 0, 0, 1, 1])
-        self.items_tree.bind('<Double-Button-1>', lambda _: self.view_group())
+        self.items_tree.bind('<Double-Button-1>', lambda _: self.view_item())
 
         items_list_nav_frame = tk.Frame(self.items_frame, background=self.bg_color)
         items_list_nav_frame.grid(row=2, column=1, columnspan=3, sticky=tk.S + tk.E)
@@ -243,12 +244,12 @@ class GestionEspacioAbierto:
         self.it_name_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Nombre',
                                                  command=lambda: self.sort_items_event('name'))
         self.it_name_sort_var.set(0)
-        self.it_name_sort_chbox.select()
         self.it_name_sort_chbox.grid(row=0, column=1, sticky=tk.N + tk.W)
         self.it_provider_sort_var = tk.IntVar()
         self.it_provider_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Proveedor',
                                                      command=lambda: self.sort_items_event('provider'))
         self.it_provider_sort_var.set(1)
+        self.it_provider_sort_chbox.select()
         self.it_provider_sort_chbox.grid(row=0, column=2, sticky=tk.N + tk.W)
         self.it_inverse_sort_var = tk.IntVar()
         self.it_inverse_sort_chbox = tk.Checkbutton(items_sorters_frame, text='Invertir orden',
@@ -675,17 +676,17 @@ class GestionEspacioAbierto:
 
     def sort_items(self):
         def normal_name_sort(items):
-            items.sort(key=lambda item: (item.name_activity, item.name_teacher))
+            items.sort(key=lambda item: (item.name, item.provider))
 
         def inverse_name_sort(items):
-            items.sort(key=lambda item: (item.name_activity, item.name_teacher))
+            items.sort(key=lambda item: (item.name, item.provider))
             items.reverse()
 
         def normal_provider_sort(items):
-            items.sort(key=lambda item: (item.name_teacher, item.name_activity))
+            items.sort(key=lambda item: (item.provider, item.name))
 
         def inverse_provider_sort(items):
-            items.sort(key=lambda item: (item.name_teacher, item.name_activity))
+            items.sort(key=lambda item: (item.provider, item.name))
             items.reverse()
 
         if self.it_inverse_sort_var.get() is 0:
@@ -753,7 +754,7 @@ class GestionEspacioAbierto:
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             self.popup_root = TkSecure()
-            popup = ModifyGroupUI(self.popup_root, item, None)
+            popup = ModifyItemUI(self.popup_root, item, None)
             self.popup_root.mainloop()
             if self.popup_root.isalive:
                 self.popup_root.destroy()
@@ -763,7 +764,17 @@ class GestionEspacioAbierto:
             self.groups_tree_update()
 
     def delete_item(self):
-        pass
+        item = self.items_tree.selection()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        self.popup_root = TkSecure()
+        popup = AreYouSureUI(self.popup_root)
+        self.popup_root.mainloop()
+        if self.popup_root.isalive:
+            self.popup_root.destroy()
+        if popup.answer:
+            self.items.remove(item)
+        self.items_tree_update()
 
     def show_references_event(self):
         if self.show_references_items_var is 0:
@@ -1696,7 +1707,7 @@ class ItemUI:
         self.price_pvp_ans = tk.Label(self.main_frame, text=self.item.price_pvp)
         self.price_pvp_ans.grid(row=7, column=1, sticky='nw')
         self.id_ans = tk.Label(self.main_frame, text=self.item.id)
-        self.id_ans.grid(row=8, column=1)
+        self.id_ans.grid(row=8, column=1, sticky='nw')
 
     def close_window(self):
         self.root.quit()
@@ -1710,6 +1721,8 @@ class ModifyItemUI(ItemUI):
             self.root.title('Nuevo Producto')
         self.item = item
         self.new_id = new_id
+        if new_id is not None:
+            self.item.id = new_id
         self.new = False
 
         # NEW FIELD VALUES
