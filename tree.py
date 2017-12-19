@@ -88,7 +88,7 @@ class TreeObject:
     def size_columns(self):
         for col in self.header:
             self.tree.heading(col, text=col)
-            self.tree.column(col,width=100)
+            self.tree.column(col,width=80)
             self.tree.column(col, minwidth=20, stretch=True)
         _ = 1
 
