@@ -123,7 +123,7 @@ class GestionEspacioAbierto:
         # Search Box
         self.cl_search_entry = tk.Entry(clients_buttons_frame)
         self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
-        self.cl_search_button = tk.Button(clients_buttons_frame, text='Buscar', command=self.search_clients)
+        self.cl_search_button = tk.Button(clients_buttons_frame, text='Buscar', command=self.search_clients_event)
         self.cl_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
         self.cl_search_clear_button = tk.Button(clients_buttons_frame, text='Resetear',
                                                 command=lambda: self.clients_checkbox_update('Clients'))
@@ -371,6 +371,7 @@ class GestionEspacioAbierto:
         self.sort_clients()
         self.clients_tree.clear_tree()
         if self.cl_search_isactive:
+            self.search_clients()
             for client in self.searched_clients:
                 self.clients_tree.add_objects([client])
         else:
@@ -448,7 +449,6 @@ class GestionEspacioAbierto:
         self.pa_chbox_var.set(0)
         self.al_chbox_var.set(0)
         self.al_chbox_bank_var.set(0)
-        self.cl_search_isactive = True
         keyword = self.cl_search_entry.get()
         clients_alumns = self.clients + self.alumns
         names_surnames = list(map(lambda client: client.name + ' ' + client.surname, clients_alumns))
@@ -459,6 +459,9 @@ class GestionEspacioAbierto:
                 self.searched_clients.append(clients_alumns[counter])
             counter = counter + 1
         self.searched_clients = list(set(self.searched_clients))
+
+    def search_clients_event(self):
+        self.cl_search_isactive = True
         self.clients_tree_update()
 
     def clear_search_clients(self):
