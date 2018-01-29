@@ -236,10 +236,10 @@ class GestionEspacioAbierto:
         # Search Box
         self.it_search_entry = tk.Entry(items_buttons_frame)
         self.it_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
-        self.it_search_button = tk.Button(items_buttons_frame, text='Buscar', command=self.search_items)
+        self.it_search_button = tk.Button(items_buttons_frame, text='Buscar', command=self.search_items_event)
         self.it_search_button.grid(row=0, column=5, sticky=tk.N + tk.E)
         self.it_search_clear_button = tk.Button(items_buttons_frame, text='Resetear',
-                                                command=lambda: self.clear_search_items)
+                                                command=self.clear_search_items)
         self.it_search_clear_button.grid(row=0, column=6, sticky=tk.N + tk.E)
         self.it_search_isactive = False
 
@@ -677,13 +677,31 @@ class GestionEspacioAbierto:
     def items_tree_update(self):
         self.sort_items()
         self.items_tree.clear_tree()
-        self.items_tree.add_objects(self.items)
+        if self.it_search_isactive:
+            self.items_tree.add_objects(self.searched_items)
+        else:
+            self.items_tree.add_objects(self.items)
 
     def search_items(self):
-        pass
+        keyword = self.it_search_entry.get()
+        items_keywords = list(map(lambda item: item.name + ' ' + item.distributor + ' ' + item.provider, self.items))
+        self.searched_items = list()
+        counter = 0
+        for item_key in items_keywords:
+            if keyword.lower() in item_key.lower():
+                self.searched_items.append(self.items[counter])
+            counter = counter + 1
+        self.searched_items = list(set(self.searched_items))
+
+    def search_items_event(self):
+        self.it_search_isactive = True
+        self.search_items()
+        self.items_tree_update()
 
     def clear_search_items(self):
-        pass
+        self.it_search_isactive = False
+        self.it_search_entry.delete(0, tk.END)
+        self.items_tree_update()
 
     def sort_items(self):
         def normal_name_sort(items):
@@ -770,9 +788,9 @@ class GestionEspacioAbierto:
             if self.popup_root.isalive:
                 self.popup_root.destroy()
             if popup.new:
-                self.groups.remove(item)
-                self.groups.append(popup.item)
-            self.groups_tree_update()
+                self.items.remove(item)
+                self.items.append(popup.item)
+            self.items_tree_update()
 
     def delete_item(self):
         item = self.items_tree.selection()
