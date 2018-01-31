@@ -3,7 +3,7 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.filedialog as tkfile
 import copy
-import os.path as path
+import os
 import datetime
 from PIL import Image, ImageTk
 
@@ -52,7 +52,7 @@ class GestionEspacioAbierto:
         label_logotk = ImageTk.PhotoImage(label_logo)
         label_logo_image_label = tk.Label(self.welcome_frame, image=label_logotk, bg='white')
         label_logo_image_label.image = label_logotk
-        label_logo_image_label.grid(row=0, column=0,columnspan=2, sticky='nwes', padx=(20, 20), pady=(20, 20))
+        label_logo_image_label.grid(row=0, column=0, columnspan=2, sticky='nwes', padx=(20, 20), pady=(20, 20))
 
         welcome_nav_frame = tk.Frame(self.welcome_frame, background=self.bg_color)
         welcome_nav_frame.grid(row=1, column=1, sticky=tk.S + tk.E)
@@ -2019,30 +2019,52 @@ class Logger:
 
 
 if __name__ == '__main__':
+    backup_dir = 'backup'
+    old_backup_dir = 'backup/old'
+    backup_freq = 7
+    max_backup_oldness = 365
     file_log = 'log.txt'
-    file_clients = 'clients.txt'
-    file_alumns = 'alumnos.txt'
-    file_groups = 'groups.txt'
-    file_items = 'items.txt'
+    data_dir = 'database'
+    file_clients = data_dir + '/' + 'clients.txt'
+    file_alumns = data_dir + '/' + 'alumnos.txt'
+    file_groups = data_dir + '/' + 'groups.txt'
+    file_items = data_dir + '/' + 'items.txt'
     logger = Logger()
     logger.log_start()
     logger.write_log()
-    if not path.isfile(file_clients):
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+        logger.log('data directory not found. data directory created')
+        logger.write_log()
+    if not os.path.isfile(file_clients):
         io.write_clients(file_clients, [], cl.Client)
         logger.log('clients.txt not found. Empty cliets.txt created')
         logger.write_log()
-    if not path.isfile(file_alumns):
+    if not os.path.isfile(file_alumns):
         io.write_clients(file_alumns, [], cl.Alumn)
         logger.log('alumnos.txt not found. Empty alumnos.txt created')
         logger.write_log()
-    if not path.isfile(file_groups):
+    if not os.path.isfile(file_groups):
         io.write_groups(file_groups, [])
         logger.log('groups.txt not found. Empty groups.txt created')
         logger.write_log()
-    if not path.isfile(file_items):
+    if not os.path.isfile(file_items):
         io.write_items(file_items, [])
         logger.log('items.txt not found. Empty items.txt created')
         logger.write_log()
+    if not os.path.isdir(backup_dir):
+        io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
+        logger.log('backup directory not found. Backup created')
+        logger.write_log()
+    if not os.path.isdir(old_backup_dir):
+        os.makedirs(old_backup_dir)
+        logger.log('old_backup directory not found. old_backup directory created')
+        logger.write_log()
+
+    io.purge_old_backups(backup_dir, old_backup_dir, max_backup_oldness)
+
+    if io.is_last_backup_old(backup_dir, backup_freq):
+        io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
 
     root = tk.Tk()
     myapp = GestionEspacioAbierto(root)
