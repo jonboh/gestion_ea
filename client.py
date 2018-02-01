@@ -39,12 +39,13 @@ class Client:
 
 
 class Alumn(Client):
-    tree_header = Client.tree_header + ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
-    default_header_map = Client.default_header_map + [1, 1, 1, 1]
+    tree_header = Client.tree_header + ['Alta/Baja', 'Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
+    default_header_map = Client.default_header_map + [1, 1, 1, 1, 1]
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
-                 client_id='', pay_bank='0', bank_acc='', pay_period='0', groups='{}'):
+                 client_id='', active='0', pay_bank='0', bank_acc='', pay_period='0', groups='{}'):
         super().__init__(name, surname, id_card, phone1, phone2, email, client_id)
+        self.active = int(active)
         self.pay_bank = bool(eval(pay_bank))
         self.bank_acc = bank_acc
         self.pay_period = int(pay_period)
@@ -54,7 +55,7 @@ class Alumn(Client):
             self.groups = eval(groups)  # set
 
     def tree_header_map(self, header_map):
-        raw_entries_list = ['Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
+        raw_entries_list = ['Alta/Baja', 'Domicilia', 'Cuenta Bancaria', 'Periodo Pago', 'Grupos']
         entries_list = super().tree_header_map(header_map)
         for entry, isincluded in zip(raw_entries_list, header_map[len(Client.tree_header):]):
             if isincluded:
@@ -62,6 +63,10 @@ class Alumn(Client):
         return entries_list
 
     def tree_entries(self, header_map=default_header_map):
+        if self.active is 1:
+            active = 'Alta'
+        else:
+            active = 'Baja'
         if self.pay_bank:
             pay_bank = 'Si'
         else:
@@ -77,7 +82,7 @@ class Alumn(Client):
         groups = self.groups
         if len(self.groups) == 0:
             groups = '{}'
-        raw_entries_list = [pay_bank, self.bank_acc, pay_period, groups]
+        raw_entries_list = [active, pay_bank, self.bank_acc, pay_period, groups]
         entries_list = super().tree_entries(header_map)
         for entry, isincluded in zip(raw_entries_list, header_map[len(Client.tree_header):]):
             if isincluded:
@@ -86,7 +91,8 @@ class Alumn(Client):
 
     def __str__(self):
         ret_string = ';'.join(
-            [super().__str__(), str(self.pay_bank), self.bank_acc, str(self.pay_period), str(self.groups)])
+            [super().__str__(), str(self.active), str(self.pay_bank), self.bank_acc, str(self.pay_period),
+             str(self.groups)])
         return ret_string
 
 

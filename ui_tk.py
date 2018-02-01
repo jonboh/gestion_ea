@@ -922,6 +922,8 @@ class ClientUI:
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
             # FIELDS
+            active_field = tk.Label(self.main_frame, text='Alta/Baja:')
+            active_field.grid(row=7, column=0, sticky=tk.N + tk.W)
             pay_bank_field = tk.Label(self.main_frame, text='Domicilia?:')
             pay_bank_field.grid(row=8, column=0, sticky=tk.N + tk.W)
             bank_acc_field = tk.Label(self.main_frame, text='IBAN:')
@@ -930,6 +932,10 @@ class ClientUI:
             pay_period_field.grid(row=10, column=0, sticky=tk.N + tk.W)
 
             # FIELD VALUES
+            if client.active is 1:
+                active = 'Alta'
+            else:
+                active = 'Baja'
             if client.pay_bank:
                 pay_bank = 'Si'
             else:
@@ -942,6 +948,8 @@ class ClientUI:
                 pay_period = 'Anual'
             else:
                 pay_period = 'Desconocido'
+            self.active_ans = tk.Label(self.main_frame, text=active)
+            self.active_ans.grid(row=7, column=1, sticky='nw')
             self.pay_bank_ans = tk.Label(self.main_frame, text=pay_bank)
             self.pay_bank_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
             self.bank_acc_ans = tk.Label(self.main_frame, text=client.bank_acc)
@@ -1008,6 +1016,18 @@ class ModifyClientUI(ClientUI):
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
+            self.active_new_var = tk.IntVar()
+            self.active_new = tk.Checkbutton(self.main_frame, variable=self.active_new_var,
+                                             command=lambda: self.press_active_ans())
+            if self.client.active is 1:
+                self.active_new_var.set(1)
+                self.active_new.select()
+                self.active_new.config(text='Alta')
+            else:
+                self.active_new_var.set(0)
+                self.active_new.deselect()
+                self.active_new.config(text='Baja')
+            self.active_new.grid(row=7, column=2, sticky='nw')
             self.pay_bank_new_var = tk.IntVar()
             self.pay_bank_new = tk.Checkbutton(self.main_frame, variable=self.pay_bank_new_var,
                                                command=lambda: self.press_pay_bank_ans())
@@ -1108,6 +1128,14 @@ class ModifyClientUI(ClientUI):
         else:
             self.pay_bank_new_var.set(0)
             self.pay_bank_new.config(text='No')
+
+    def press_active_ans(self):
+        if self.active_new_var.get() is 0:
+            self.active_new_var.set(1)
+            self.active_new.config(text='Alta')
+        else:
+            self.active_new_var.set(0)
+            self.active_new.config(text='Baja')
 
     def press_period_ans(self, invoker):
         if invoker is 'Month':
@@ -1249,6 +1277,7 @@ class ModifyClientUI(ClientUI):
         if self.client.phone2 != self.phone2_new.get(): self.saved = False
         if self.client.email != self.email_new.get(): self.saved = False
         if type(self.client) is cl.Alumn:
+            if self.client.active != self.active_new_var.get(): self.saved = False
             if self.client.pay_bank != self.pay_bank_new_var.get(): self.saved = False
             if self.client.bank_acc != self.bank_acc_new.get(): self.saved = False
             if self.month_var.get() is 1:
