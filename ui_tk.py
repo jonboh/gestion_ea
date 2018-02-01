@@ -120,6 +120,13 @@ class GestionEspacioAbierto:
                                                    variable=self.al_chbox_bank_var,
                                                    command=lambda: self.clients_checkbox_update('bank'))
         self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.E)
+        self.al_chbox_active_var = tk.IntVar()
+        self.al_chbox_active_var.set(0)
+        self.alumns_checkbox_active = tk.Checkbutton(clients_buttons_frame, text='Solo Altas',
+                                                   font=("Helvetica", 10),
+                                                   variable=self.al_chbox_active_var,
+                                                   command=lambda: self.clients_checkbox_update('active'))
+        self.alumns_checkbox_active.grid(row=1, column=3, sticky=tk.N + tk.W)
         # Search Box
         self.cl_search_entry = tk.Entry(clients_buttons_frame)
         self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
@@ -348,12 +355,14 @@ class GestionEspacioAbierto:
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(0)
             self.al_chbox_bank_var.set(0)
+            self.al_chbox_active_var.set(0)
             self.clear_search_clients()
         if invoker is 'Patients':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(1)
             self.al_chbox_var.set(0)
             self.al_chbox_bank_var.set(0)
+            self.al_chbox_active_var.set(0)
             self.clear_search_clients()
         if invoker is 'Alumns':
             self.cl_chbox_var.set(0)
@@ -361,6 +370,11 @@ class GestionEspacioAbierto:
             self.al_chbox_var.set(1)
             self.clear_search_clients()
         if invoker is 'bank':
+            self.cl_chbox_var.set(0)
+            self.pa_chbox_var.set(0)
+            self.al_chbox_var.set(1)
+            self.clear_search_clients()
+        if invoker is 'active':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
@@ -384,11 +398,18 @@ class GestionEspacioAbierto:
             if self.al_chbox_var.get() is 1:
                 for client in self.alumns:
                     # Alumns + Only Bank Pay
-                    if self.al_chbox_bank_var.get():
+                    if self.al_chbox_bank_var.get() and self.al_chbox_active_var.get():
+                        if client.active is 1 and client.pay_bank:
+                            self.clients_tree.add_objects([client])
+                    elif self.al_chbox_bank_var.get():
                         if client.pay_bank:
+                            self.clients_tree.add_objects([client])
+                    elif self.al_chbox_active_var.get():
+                        if client.active is 1:
                             self.clients_tree.add_objects([client])
                     else:
                         self.clients_tree.add_objects([client])
+
 
     def sort_clients(self):
         def normal_name_sort(clients):
@@ -1203,6 +1224,7 @@ class ModifyClientUI(ClientUI):
                         self.client.groups.discard(self.groups_id_list[counter])
                         self.update_group(self.available_groups[counter], self.client.id, 'remove')
                     counter = counter + 1
+                self.client.active = self.active_new_var.get()
                 self.client.pay_bank = bool(self.pay_bank_new_var.get())
                 self.client.bank_acc = self.bank_acc_new.get()
                 if self.month_var.get() is 1:
@@ -1237,6 +1259,10 @@ class ModifyClientUI(ClientUI):
         self.email_ans.config(text=self.client.email)
         self.client_id_ans.config(text=self.client.id)
         if type(self.client) is cl.Alumn:
+            if self.client.active:
+                active = 'Alta'
+            else:
+                active = 'Baja'
             if self.client.pay_bank:
                 pay_bank = 'Si'
             else:
@@ -1249,6 +1275,7 @@ class ModifyClientUI(ClientUI):
                 pay_period = 'Anual'
             else:
                 pay_period = 'Desconocido'
+            self.active_ans.config(text=active)
             self.pay_bank_ans.config(text=pay_bank)
             self.bank_acc_ans.config(text=self.client.bank_acc)
             self.pay_period_ans.config(text=pay_period)
@@ -2081,20 +2108,26 @@ if __name__ == '__main__':
         io.write_items(file_items, [])
         logger.log('items.txt not found. Empty items.txt created')
         logger.write_log()
-    if not os.path.isdir(backup_dir):
-        io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
-        logger.log('backup directory not found. Backup created')
-        logger.write_log()
-    if not os.path.isdir(old_backup_dir):
-        os.makedirs(old_backup_dir)
-        logger.log('old_backup directory not found. old_backup directory created')
-        logger.write_log()
+    try:
+        if not os.path.isdir(backup_dir):
+            io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
+            logger.log('backup directory not found. Backup created')
+            logger.write_log()
+        if not os.path.isdir(old_backup_dir):
+            os.makedirs(old_backup_dir)
+            logger.log('old_backup directory not found. old_backup directory created')
+            logger.write_log()
 
-    io.purge_old_backups(backup_dir, old_backup_dir, max_backup_oldness)
+        io.purge_old_backups(backup_dir, old_backup_dir, max_backup_oldness)
 
-    if io.is_last_backup_old(backup_dir, backup_freq):
-        io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
-
+        if io.is_last_backup_old(backup_dir, backup_freq):
+            io.make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, file_items)
+    except:
+        emergency_root = tk.Tk()
+        message_popup = AreYouSureUI(emergency_root, 'Hubo un error con el sistema de Bakup',
+                                     'Puedes continuar trabajando, pero contacta con el Soporte lo antes posible')
+        emergency_root.mainloop()
+        emergency_root.destroy()
     root = tk.Tk()
     myapp = GestionEspacioAbierto(root)
 
