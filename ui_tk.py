@@ -123,9 +123,9 @@ class GestionEspacioAbierto:
         self.al_chbox_active_var = tk.IntVar()
         self.al_chbox_active_var.set(0)
         self.alumns_checkbox_active = tk.Checkbutton(clients_buttons_frame, text='Solo Altas',
-                                                   font=("Helvetica", 10),
-                                                   variable=self.al_chbox_active_var,
-                                                   command=lambda: self.clients_checkbox_update('active'))
+                                                     font=("Helvetica", 10),
+                                                     variable=self.al_chbox_active_var,
+                                                     command=lambda: self.clients_checkbox_update('active'))
         self.alumns_checkbox_active.grid(row=1, column=3, sticky=tk.N + tk.W)
         # Search Box
         self.cl_search_entry = tk.Entry(clients_buttons_frame)
@@ -409,7 +409,6 @@ class GestionEspacioAbierto:
                             self.clients_tree.add_objects([client])
                     else:
                         self.clients_tree.add_objects([client])
-
 
     def sort_clients(self):
         def normal_name_sort(clients):
@@ -1971,7 +1970,11 @@ class ExportUI:
             filename = filename.name
             if not filename[-4] is '.':
                 filename = filename + '.csv'
-            io.write_export(filename, self.result_tree.objects, self.object_type, self.result_tree.header_map)
+            if self.object_type is cl.Client or self.object_type is cl.Alumn:
+                io.write_export_clients(filename, self.result_tree.objects, self.object_type,
+                                        self.result_tree.header_map)
+            else:
+                io.write_export(filename, self.result_tree.objects, self.object_type, self.result_tree.header_map)
 
     def press_field_checkbox(self, event):
         counter = 0

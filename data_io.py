@@ -49,6 +49,22 @@ def write_items(file_items, items_list):
         file.write('\n'.join(map(str, items_list)))
 
 
+def write_export_clients(filename, objects, object_type, header_map):
+    with open(filename, 'w') as file:
+        if header_map[0] is 1 and header_map[1] is 1: # Join name and surname in a single column
+            str_list = object_type().tree_header_map(header_map)
+            str_list[0:2] = [' y '.join(str_list[0:2])]
+            file.write(','.join(str_list) + '\n')
+            for object_ in objects:
+                str_list = list(map(str, object_.tree_entries(header_map)))
+                str_list[0:2] = [' '.join(str_list[0:2])]
+                file.write(','.join(str_list) + '\n')
+        else:
+            file.write(','.join(object_type().tree_header_map(header_map)) + '\n')
+            for object_ in objects:
+                file.write(','.join(map(str, object_.tree_entries(header_map))) + '\n')
+
+
 def write_export(filename, objects, object_type, header_map):
     with open(filename, 'w') as file:
         file.write(','.join(object_type().tree_header_map(header_map)) + '\n')
