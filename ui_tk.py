@@ -948,8 +948,10 @@ class ClientUI:
             pay_bank_field.grid(row=8, column=0, sticky=tk.N + tk.W)
             bank_acc_field = tk.Label(self.main_frame, text='IBAN:')
             bank_acc_field.grid(row=9, column=0, sticky=tk.N + tk.W)
+            date_sent_field = tk.Label(self.main_frame, text='Fecha Mandato:')
+            date_sent_field.grid(row=10, column=0, sticky=tk.N + tk.W)
             pay_period_field = tk.Label(self.main_frame, text='Tipo Pago:')
-            pay_period_field.grid(row=10, column=0, sticky=tk.N + tk.W)
+            pay_period_field.grid(row=11, column=0, sticky=tk.N + tk.W)
 
             # FIELD VALUES
             if client.active is 1:
@@ -974,8 +976,10 @@ class ClientUI:
             self.pay_bank_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
             self.bank_acc_ans = tk.Label(self.main_frame, text=client.bank_acc)
             self.bank_acc_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
+            self.date_sent_ans = tk.Label(self.main_frame, text=client.date_sent)
+            self.date_sent_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
             self.pay_period_ans = tk.Label(self.main_frame, text=pay_period)
-            self.pay_period_ans.grid(row=10, column=1, sticky=tk.N + tk.W)
+            self.pay_period_ans.grid(row=11, column=1, sticky=tk.N + tk.W)
 
             # Groups Labels
             self.groups_frame_init()
@@ -1064,8 +1068,12 @@ class ModifyClientUI(ClientUI):
             self.bank_acc_new.delete(0, tk.END)
             self.bank_acc_new.insert(0, self.client.bank_acc)
             self.bank_acc_new.grid(row=9, column=2, sticky=tk.N + tk.W)
+            self.date_sent_new = tk.Entry(self.main_frame)
+            self.date_sent_new.delete(0, tk.END)
+            self.date_sent_new.insert(0, self.client.date_sent)
+            self.date_sent_new.grid(row=10, column=2, sticky=tk.N + tk.W)
             self.pay_period_miniframe = tk.Frame(self.main_frame)
-            self.pay_period_miniframe.grid(row=10, column=2, sticky=tk.N + tk.W)
+            self.pay_period_miniframe.grid(row=11, column=2, sticky=tk.N + tk.W)
             self.month_var = tk.IntVar()
             self.month_checkbox = tk.Checkbutton(self.pay_period_miniframe, text='Mensual ', variable=self.month_var,
                                                  command=lambda: self.press_period_ans('Month'), onvalue=1, offvalue=0)
@@ -1226,6 +1234,7 @@ class ModifyClientUI(ClientUI):
                 self.client.active = self.active_new_var.get()
                 self.client.pay_bank = bool(self.pay_bank_new_var.get())
                 self.client.bank_acc = self.bank_acc_new.get()
+                self.client.date_sent = self.date_sent_new.get()
                 if self.month_var.get() is 1:
                     self.client.pay_period = 0
                 elif self.trimonth_var.get() is 1:
@@ -1277,6 +1286,7 @@ class ModifyClientUI(ClientUI):
             self.active_ans.config(text=active)
             self.pay_bank_ans.config(text=pay_bank)
             self.bank_acc_ans.config(text=self.client.bank_acc)
+            self.date_sent_ans.config(text=self.client.date_sent)
             self.pay_period_ans.config(text=pay_period)
 
     def info_integrity(self):
@@ -1289,7 +1299,7 @@ class ModifyClientUI(ClientUI):
         var_list = [self.name_new.get(), self.surname_new.get(), self.id_card_new.get(), self.phone1_new.get(),
                     self.phone2_new.get(), self.email_new.get()]
         if self.client is cl.Alumn:
-            var_list = var_list + [self.bank_acc_new.get()]
+            var_list = var_list + [self.bank_acc_new.get(), self.date_sent_new.get()]
         for var in var_list:
             no_semicolon = no_semicolon and not (';' in var)
         return no_semicolon
@@ -1306,6 +1316,7 @@ class ModifyClientUI(ClientUI):
             if self.client.active != self.active_new_var.get(): self.saved = False
             if self.client.pay_bank != self.pay_bank_new_var.get(): self.saved = False
             if self.client.bank_acc != self.bank_acc_new.get(): self.saved = False
+            if self.client.date_sent != self.date_sent_new.get(): self.saved = False
             if self.month_var.get() is 1:
                 pay_period_new = 0
             elif self.trimonth_var.get() is 1:
