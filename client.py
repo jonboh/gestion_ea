@@ -40,7 +40,7 @@ class Client:
 
 class Alumn(Client):
     tree_header = Client.tree_header + ['Alta/Baja', 'Domicilia', 'Cuenta Bancaria', 'Fecha Mandato', 'Periodo Pago', 'Grupos']
-    default_header_map = Client.default_header_map + [1, 1, 1, 1, 1]
+    default_header_map = Client.default_header_map + [1, 1, 1, 1, 1, 1]
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', active='0', pay_bank='0', bank_acc='', date_sent='', pay_period='0', groups='{}'):
