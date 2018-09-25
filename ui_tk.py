@@ -2,6 +2,8 @@ import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.filedialog as tkfile
+from tkinter.scrolledtext import ScrolledText
+
 import copy
 import os
 import datetime
@@ -920,6 +922,10 @@ class ClientUI:
         phone2_field.grid(row=4, column=0, sticky=tk.N + tk.W)
         email_field = tk.Label(self.main_frame, text='E-mail: ')
         email_field.grid(row=5, column=0, sticky=tk.N + tk.W)
+        price_field = tk.Label(self.main_frame, text='Importe')
+        price_field.grid(row=6, column=0, sticky=tk.N+tk.W)
+        observations_field = tk.Label(self.main_frame, text='Observaciones')
+        observations_field.grid(row=7, column=0, sticky=tk.N+tk.W)
         #client_id_field = tk.Label(self.main_frame, text='ID Cliente: ')
         #client_id_field.grid(row=6, column=0, sticky=tk.N + tk.W)
 
@@ -936,22 +942,31 @@ class ClientUI:
         self.phone2_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
         self.email_ans = tk.Label(self.main_frame, text=self.client.email)
         self.email_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
+        self.price_ans = tk.Label(self.main_frame, text=self.client.price)
+        self.price_ans.grid(row=6, column=1, sticky=tk.N+tk.W)
+        self.observations_ans = ScrolledText(self.main_frame, width=40, height=10)
+        self.observations_ans.grid(row=8, column=0, columnspan=2, sticky=tk.N+tk.W+tk.E+tk.S)
+        self.observations_ans.delete('@0,0', tk.END)
+        self.observations_ans.insert('@0,0', self.client.observations)
+        self.observations_ans.config(state=tk.DISABLED)
         #self.client_id_ans = tk.Label(self.main_frame, text=self.client.id)
         #self.client_id_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+
+        self.last_row = 8
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
             # FIELDS
             active_field = tk.Label(self.main_frame, text='Alta/Baja:')
-            active_field.grid(row=7, column=0, sticky=tk.N + tk.W)
+            active_field.grid(row=self.last_row+1, column=0, sticky=tk.N + tk.W)
             pay_bank_field = tk.Label(self.main_frame, text='Domicilia?:')
-            pay_bank_field.grid(row=8, column=0, sticky=tk.N + tk.W)
+            pay_bank_field.grid(row=self.last_row+2, column=0, sticky=tk.N + tk.W)
             bank_acc_field = tk.Label(self.main_frame, text='IBAN:')
-            bank_acc_field.grid(row=9, column=0, sticky=tk.N + tk.W)
+            bank_acc_field.grid(row=self.last_row+3, column=0, sticky=tk.N + tk.W)
             date_sent_field = tk.Label(self.main_frame, text='Fecha Mandato:')
-            date_sent_field.grid(row=10, column=0, sticky=tk.N + tk.W)
+            date_sent_field.grid(row=self.last_row+4, column=0, sticky=tk.N + tk.W)
             pay_period_field = tk.Label(self.main_frame, text='Tipo Pago:')
-            pay_period_field.grid(row=11, column=0, sticky=tk.N + tk.W)
+            pay_period_field.grid(row=self.last_row+5, column=0, sticky=tk.N + tk.W)
 
             # FIELD VALUES
             if client.active is 1:
@@ -971,15 +986,15 @@ class ClientUI:
             else:
                 pay_period = 'Desconocido'
             self.active_ans = tk.Label(self.main_frame, text=active)
-            self.active_ans.grid(row=7, column=1, sticky='nw')
+            self.active_ans.grid(row=self.last_row+1, column=1, sticky='nw')
             self.pay_bank_ans = tk.Label(self.main_frame, text=pay_bank)
-            self.pay_bank_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
+            self.pay_bank_ans.grid(row=self.last_row+2, column=1, sticky=tk.N + tk.W)
             self.bank_acc_ans = tk.Label(self.main_frame, text=client.bank_acc)
-            self.bank_acc_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
+            self.bank_acc_ans.grid(row=self.last_row+3, column=1, sticky=tk.N + tk.W)
             self.date_sent_ans = tk.Label(self.main_frame, text=client.date_sent)
-            self.date_sent_ans.grid(row=9, column=1, sticky=tk.N + tk.W)
+            self.date_sent_ans.grid(row=self.last_row+4, column=1, sticky=tk.N + tk.W)
             self.pay_period_ans = tk.Label(self.main_frame, text=pay_period)
-            self.pay_period_ans.grid(row=11, column=1, sticky=tk.N + tk.W)
+            self.pay_period_ans.grid(row=self.last_row+5, column=1, sticky=tk.N + tk.W)
 
             # Groups Labels
             self.groups_frame_init()
@@ -1038,6 +1053,15 @@ class ModifyClientUI(ClientUI):
         self.email_new.delete(0, tk.END)
         self.email_new.insert(0, self.client.email)
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
+        self.price_new = tk.Entry(self.main_frame, text=self.client.price)
+        self.price_new.delete(0, tk.END)
+        self.price_new.insert(0, self.client.price)
+        self.price_new.grid(row=6, column=2, sticky=tk.N+tk.W)
+        self.observations_ans.destroy()
+        self.observations_new = ScrolledText(self.main_frame, width=40, height=10)
+        self.observations_new.delete('@0,0', tk.END)
+        self.observations_new.insert('@0,0', self.client.observations)
+        self.observations_new.grid(row=8, column=0, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
 
         if type(client) is cl.Alumn:
             self.active_new_var = tk.IntVar()
@@ -1051,7 +1075,7 @@ class ModifyClientUI(ClientUI):
                 self.active_new_var.set(0)
                 self.active_new.deselect()
                 self.active_new.config(text='Baja')
-            self.active_new.grid(row=7, column=2, sticky='nw')
+            self.active_new.grid(row=self.last_row+1, column=2, sticky='nw')
             self.pay_bank_new_var = tk.IntVar()
             self.pay_bank_new = tk.Checkbutton(self.main_frame, variable=self.pay_bank_new_var,
                                                command=lambda: self.press_pay_bank_ans())
@@ -1063,17 +1087,17 @@ class ModifyClientUI(ClientUI):
                 self.pay_bank_new_var.set(0)
                 self.pay_bank_new.deselect()
                 self.pay_bank_new.config(text='No')
-            self.pay_bank_new.grid(row=8, column=2, sticky=tk.N + tk.W)
+            self.pay_bank_new.grid(row=self.last_row+2, column=2, sticky=tk.N + tk.W)
             self.bank_acc_new = tk.Entry(self.main_frame)
             self.bank_acc_new.delete(0, tk.END)
             self.bank_acc_new.insert(0, self.client.bank_acc)
-            self.bank_acc_new.grid(row=9, column=2, sticky=tk.N + tk.W)
+            self.bank_acc_new.grid(row=self.last_row+3, column=2, sticky=tk.N + tk.W)
             self.date_sent_new = tk.Entry(self.main_frame)
             self.date_sent_new.delete(0, tk.END)
             self.date_sent_new.insert(0, self.client.date_sent)
-            self.date_sent_new.grid(row=10, column=2, sticky=tk.N + tk.W)
+            self.date_sent_new.grid(row=self.last_row+4, column=2, sticky=tk.N + tk.W)
             self.pay_period_miniframe = tk.Frame(self.main_frame)
-            self.pay_period_miniframe.grid(row=11, column=2, sticky=tk.N + tk.W)
+            self.pay_period_miniframe.grid(row=self.last_row+5, column=2, sticky=tk.N + tk.W)
             self.month_var = tk.IntVar()
             self.month_checkbox = tk.Checkbutton(self.pay_period_miniframe, text='Mensual ', variable=self.month_var,
                                                  command=lambda: self.press_period_ans('Month'), onvalue=1, offvalue=0)
@@ -1219,6 +1243,8 @@ class ModifyClientUI(ClientUI):
             self.client.phone1 = self.phone1_new.get()
             self.client.phone2 = self.phone2_new.get()
             self.client.email = self.email_new.get()
+            self.client.price = self.price_new.get()
+            self.client.observations = self.observations_new.get('@0,0', tk.END)
             if not self.new_id is None:
                 self.client.id = self.new_id
             if type(self.client) is cl.Alumn:
@@ -1248,7 +1274,7 @@ class ModifyClientUI(ClientUI):
             self.saved = True
             self.new = True
         else:
-            error_label = tk.Label(self.main_frame, text='Error al Guardar, revisa la informacion introducida.',
+            error_label = tk.Label(self.main_frame, text='Error al Guardar, revisa la informacion introducida.\n Asegurate de no haber introducido ningun "punto y coma", ";"',
                                    fg='red')
             error_label.grid(row=self.save_button_row - 1, column=0, columnspan=5, sticky=tk.S)
 
@@ -1265,6 +1291,7 @@ class ModifyClientUI(ClientUI):
         self.phone1_ans.config(text=self.client.phone1)
         self.phone2_ans.config(text=self.client.phone2)
         self.email_ans.config(text=self.client.email)
+        self.price_ans.config(text=self.client.price)
         #self.client_id_ans.config(text=self.client.id)
         if type(self.client) is cl.Alumn:
             if self.client.active:
@@ -1297,7 +1324,8 @@ class ModifyClientUI(ClientUI):
     def check_semicolons(self):
         no_semicolon = True
         var_list = [self.name_new.get(), self.surname_new.get(), self.id_card_new.get(), self.phone1_new.get(),
-                    self.phone2_new.get(), self.email_new.get()]
+                    self.phone2_new.get(), self.email_new.get(), self.price_new.get(),
+                    self.observations_new.get('@0,0', tk.END)]
         if self.client is cl.Alumn:
             var_list = var_list + [self.bank_acc_new.get(), self.date_sent_new.get()]
         for var in var_list:
@@ -1312,6 +1340,8 @@ class ModifyClientUI(ClientUI):
         if self.client.phone1 != self.phone1_new.get(): self.saved = False
         if self.client.phone2 != self.phone2_new.get(): self.saved = False
         if self.client.email != self.email_new.get(): self.saved = False
+        if self.client.price != self.price_new.get(): self.saved = False
+        if self.client.observations != self.observations_new.get('@0,0', tk.END) and self.observations_new.get('@0,0', tk.END)!='\n' : self.saved = False
         if type(self.client) is cl.Alumn:
             if self.client.active != self.active_new_var.get(): self.saved = False
             if self.client.pay_bank != self.pay_bank_new_var.get(): self.saved = False
