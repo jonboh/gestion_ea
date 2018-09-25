@@ -920,8 +920,8 @@ class ClientUI:
         phone2_field.grid(row=4, column=0, sticky=tk.N + tk.W)
         email_field = tk.Label(self.main_frame, text='E-mail: ')
         email_field.grid(row=5, column=0, sticky=tk.N + tk.W)
-        client_id_field = tk.Label(self.main_frame, text='ID Cliente: ')
-        client_id_field.grid(row=6, column=0, sticky=tk.N + tk.W)
+        #client_id_field = tk.Label(self.main_frame, text='ID Cliente: ')
+        #client_id_field.grid(row=6, column=0, sticky=tk.N + tk.W)
 
         # FIELD VALUES
         self.name_ans = tk.Label(self.main_frame, text=self.client.name)
@@ -936,8 +936,8 @@ class ClientUI:
         self.phone2_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
         self.email_ans = tk.Label(self.main_frame, text=self.client.email)
         self.email_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
-        self.client_id_ans = tk.Label(self.main_frame, text=self.client.id)
-        self.client_id_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+        #self.client_id_ans = tk.Label(self.main_frame, text=self.client.id)
+        #self.client_id_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
 
         if type(client) is cl.Alumn:
             self.popup_root.title('Cliente: ' + client.name + ' ' + client.surname)
@@ -1265,7 +1265,7 @@ class ModifyClientUI(ClientUI):
         self.phone1_ans.config(text=self.client.phone1)
         self.phone2_ans.config(text=self.client.phone2)
         self.email_ans.config(text=self.client.email)
-        self.client_id_ans.config(text=self.client.id)
+        #self.client_id_ans.config(text=self.client.id)
         if type(self.client) is cl.Alumn:
             if self.client.active:
                 active = 'Alta'

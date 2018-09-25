@@ -1,6 +1,7 @@
 class Client:
     tree_header = ['Nombre', 'Apellidos', 'DNI', 'Tlf 1', 'Tlf 2', 'e-mail', 'ID Cliente']
     default_header_map = [1 for _ in tree_header]
+    default_header_map[tree_header.index('ID Cliente')] = 0
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id=''):
@@ -39,8 +40,9 @@ class Client:
 
 
 class Alumn(Client):
-    tree_header = Client.tree_header + ['Alta/Baja', 'Domicilia', 'Cuenta Bancaria', 'Fecha Mandato', 'Periodo Pago', 'Grupos']
-    default_header_map = Client.default_header_map + [1, 1, 1, 1, 1, 1]
+    alumn_extra =['Alta/Baja', 'Domicilia', 'Cuenta Bancaria', 'Fecha Mandato', 'Periodo Pago', 'Grupos']
+    tree_header = Client.tree_header + alumn_extra
+    default_header_map = Client.default_header_map + [1 for _ in alumn_extra]
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', active='0', pay_bank='0', bank_acc='', date_sent='', pay_period='0', groups='{}'):
