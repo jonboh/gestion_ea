@@ -70,7 +70,7 @@ class Alumn(Client):
 
     def __init__(self, name='', surname='', id_card='', phone1='', phone2='', email='',
                  client_id='', price='', observations='', active='0', pay_bank='0', bank_acc='', date_sent='', pay_period='0', groups='{}'):
-        super().__init__(name, surname, id_card, phone1, phone2, email, client_id)
+        super().__init__(name, surname, id_card, phone1, phone2, email, client_id, price, observations)
         self.active = int(active)
         self.pay_bank = bool(eval(pay_bank))
         self.bank_acc = bank_acc
