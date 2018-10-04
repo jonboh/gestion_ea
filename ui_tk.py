@@ -1985,21 +1985,28 @@ class ExportUI:
         self.checkboxes_frame.grid(row=1, sticky='nw')
         self.fields_var = list()
         self.fields_checkboxes = list()
+        count = 0
         for field in object_type.tree_header[0:-1]:
             field_var = tk.IntVar()
             field_checkbox = tk.Checkbutton(self.checkboxes_frame, text=field)
             field_checkbox.bind('<Button-1>', self.press_field_checkbox)
             field_checkbox.pack(side=tk.LEFT, padx=(10, 0))
-            field_var.set(1)
-            field_checkbox.select()
+            if self.export_header[count]:
+                field_var.set(1)
+                field_checkbox.select()
+            else:
+                field_var.set(0)
+                field_checkbox.deselect()
             self.fields_var.append(field_var)
             self.fields_checkboxes.append(field_checkbox)
+            count += 1
 
         result_label = tk.Label(self.main_frame, text='Resultado del exportado: ')
         result_label.grid(row=2, sticky='nw')
         result_tree_frame = tk.Frame(self.main_frame)
         result_tree_frame.grid(row=3, sticky='nwes')
         self.result_tree = tree.TreeObject(result_tree_frame, objects, object_type)
+        self.result_tree.modify_header(self.export_header)
         self.saveas_button = tk.Button(self.main_frame, text='Guardar como...', command=self.saveas)
         self.saveas_button.grid(row=4, sticky='s', pady=(10, 10))
 
