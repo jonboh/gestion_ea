@@ -1465,7 +1465,7 @@ class ModifyClientUI(ClientUI):
     def check_semicolons(self):
         no_semicolon = True
         var_list = [self.name_new.get(), self.surname_new.get(), self.id_card_new.get(),
-                    self.phone1_new.get(), self.phone2_new.get(), 
+                    self.phone1_new.get(), self.phone2_new.get(),
                     self.email_new.get(), self.price_new.get(),
                     self.observations_new.get('@0,0', tk.END)]
         if self.client is cl.Alumn:
@@ -1539,7 +1539,7 @@ class ModifyClientUI(ClientUI):
 class GroupUI:
     def __init__(self, root, group, available_clients=list()):
         self.root = root
-        self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' ' 
+        self.root.title('Grupo: ' + group.name_activity + ' ' + group.name_teacher + ' '
                         + str(group.days) + ' ' + str(group.time_start))
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
         self.group = group
