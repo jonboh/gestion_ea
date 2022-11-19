@@ -20,11 +20,14 @@ class TreeObject:
 
         self.tree_ids = list()
         self.tree = ttk.Treeview(self.main_frame)
-        self.vsb = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.tree.yview)
+        self.vsb = ttk.Scrollbar(
+            self.main_frame, orient="vertical", command=self.tree.yview)
         self.vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        self.hsb = ttk.Scrollbar(self.main_frame, orient="horizontal", command=self.tree.xview)
+        self.hsb = ttk.Scrollbar(
+            self.main_frame, orient="horizontal", command=self.tree.xview)
         self.hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.tree.configure(yscrollcommand=self.vsb.set, xscrollcommand=self.hsb.set)
+        self.tree.configure(yscrollcommand=self.vsb.set,
+                            xscrollcommand=self.hsb.set)
         self.tree.pack(fill='both', expand=True)
         self.tree.config(columns=self.header, show='headings')
 
@@ -73,11 +76,14 @@ class TreeObject:
         self.clear_tree()
         self.tree.destroy()
         self.tree = ttk.Treeview(self.main_frame)
-        self.vsb = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.tree.yview)
+        self.vsb = ttk.Scrollbar(
+            self.main_frame, orient="vertical", command=self.tree.yview)
         self.vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        self.hsb = ttk.Scrollbar(self.main_frame, orient="horizontal", command=self.tree.xview)
+        self.hsb = ttk.Scrollbar(
+            self.main_frame, orient="horizontal", command=self.tree.xview)
         self.hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.tree.configure(yscrollcommand=self.vsb.set, xscrollcommand=self.hsb.set)
+        self.tree.configure(yscrollcommand=self.vsb.set,
+                            xscrollcommand=self.hsb.set)
         self.tree.pack(fill='both', expand=True)
         self.tree.config(columns=self.header, show='headings')
 
@@ -88,12 +94,12 @@ class TreeObject:
     def size_columns(self):
         for col in self.header:
             self.tree.heading(col, text=col)
-            self.tree.column(col,width=80)
+            self.tree.column(col, width=80)
             self.tree.column(col, minwidth=20, stretch=True)
         _ = 1
 
     def _theres_selection(self):
-        if len(self.tree.selection()) is 0:
+        if len(self.tree.selection()) == 0:
             return False
         else:
             return True
