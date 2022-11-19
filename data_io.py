@@ -9,8 +9,9 @@ import client as cl
 
 def load_clients(file_clients, client_type):
     with open(file_clients) as file:
-        column_names = file.readline()
-        client_list = [client_type(*line.rstrip('\n').split(';')) for line in file]
+        _ = file.readline()  # column_names
+        client_list = [client_type(*line.rstrip('\n').split(';'))
+                       for line in file]
     return client_list
 
 
@@ -23,8 +24,9 @@ def write_clients(file_clients, clients_list, client_type):
 
 def load_groups(file_groups):
     with open(file_groups) as file:
-        column_names = file.readline()
-        groups_list = [gr.Group(*line.rstrip('\n').split(';')) for line in file]
+        _ = file.readline()  # column_names
+        groups_list = [gr.Group(*line.rstrip('\n').split(';'))
+                       for line in file]
     return groups_list
 
 
@@ -37,7 +39,7 @@ def write_groups(file_groups, groups_list):
 
 def load_items(file_items):
     with open(file_items) as file:
-        column_names = file.readline()
+        _ = file.readline()  # column_names
         items_list = [it.Item(*line.rstrip('\n').split(';')) for line in file]
     return items_list
 
@@ -51,7 +53,8 @@ def write_items(file_items, items_list):
 
 def write_export_clients(filename, objects, object_type, header_map):
     with open(filename, 'w') as file:
-        if header_map[0] is 1 and header_map[1] is 1: # Join name and surname in a single column
+        # Join name and surname in a single column
+        if header_map[0] == 1 and header_map[1] == 1:
             str_list = object_type().tree_header_map(header_map)
             str_list[0:2] = [' y '.join(str_list[0:2])]
             file.write(','.join(str_list) + '\n')
@@ -60,23 +63,27 @@ def write_export_clients(filename, objects, object_type, header_map):
                 str_list[0:2] = [' '.join(str_list[0:2])]
                 file.write(','.join(str_list) + '\n')
         else:
-            file.write(','.join(object_type().tree_header_map(header_map)) + '\n')
+            file.write(
+                ','.join(object_type().tree_header_map(header_map)) + '\n')
             for object_ in objects:
-                file.write(','.join(map(str, object_.tree_entries(header_map))) + '\n')
+                file.write(
+                    ','.join(map(str, object_.tree_entries(header_map))) + '\n')
 
 
 def write_export(filename, objects, object_type, header_map):
     with open(filename, 'w') as file:
         file.write(','.join(object_type().tree_header_map(header_map)) + '\n')
         for object_ in objects:
-            file.write(','.join(map(str, object_.tree_entries(header_map))) + '\n')
+            file.write(
+                ','.join(map(str, object_.tree_entries(header_map))) + '\n')
 
 
 def is_last_backup_old(backup_dir, backup_freq):
     backups = next(os.walk(backup_dir))[1]  # generator
     backups_dates = list(map(dateparser, backups))
     backups_oldness = list(map(lambda element:
-                               (datetime.date.today() - element[0]).total_seconds() / 60 / 60 / 24,
+                               (datetime.date.today() -
+                                element[0]).total_seconds() / 60 / 60 / 24,
                                backups_dates))
     if min(backups_oldness) > backup_freq:
         return True
@@ -91,8 +98,7 @@ def purge_old_backups(backup_dir, old_backup_dir, max_oldness):
     backups = next(os.walk(backup_dir))[1]  # generator
     backups_dates = list(map(dateparser, backups))
     backups_oldness = list(map(lambda element:
-                               (datetime.date.today() - element[0]).total_seconds() / 60 / 60 / 24
-                               , backups_dates))
+                               (datetime.date.today() - element[0]).total_seconds() / 60 / 60 / 24, backups_dates))
     for i in range(0, len(backups)):
         if backups_oldness[i] > max_oldness:
             if backups_dates[i][1] is True:
@@ -109,9 +115,12 @@ def make_backup(backup_dir, data_dir, file_clients, file_alumns, file_groups, fi
     date = datetime.datetime.now()
     datestring = date2string(date.year, date.month, date.day)
     backup_dated_dir = backup_dir + '/' + datestring + '/'
-    os.makedirs(backup_dated_dir + '/' + data_dir)  # file_whatever already includes the data_dir
-    write_clients(backup_dated_dir + file_clients, clients, cl.Client)  # we have to include it
-    write_clients(backup_dated_dir + file_alumns, alumns, cl.Alumn)  # only to create the dir
+    # file_whatever already includes the data_dir
+    os.makedirs(backup_dated_dir + '/' + data_dir)
+    write_clients(backup_dated_dir + file_clients, clients,
+                  cl.Client)  # we have to include it
+    write_clients(backup_dated_dir + file_alumns, alumns,
+                  cl.Alumn)  # only to create the dir
     write_groups(backup_dated_dir + file_groups, groups)
     write_items(backup_dated_dir + file_items, items)
 
