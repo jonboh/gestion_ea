@@ -1,9 +1,10 @@
 class Group:
-    tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros', 'Limite de Miembros',
-                   'ID Grupo']
+    tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros',
+                   'Limite de Miembros',                 'ID Grupo']
     default_header_map = [1 for _ in tree_header]
 
-    def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00', price='0.0',
+    def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00',
+                 price='0.0',
                  limit_members='0', members='{}',
                  group_id='-1'):
         self.name_activity = name_activity
@@ -24,12 +25,14 @@ class Group:
 
     def __str__(self):
         ret_string = ';'.join(
-            [self.name_activity, self.name_teacher, str(self.days), str(self.time_start), str(self.time_end),
-             str(self.price), str(self.limit_members), str(self.members), str(self.id)])
+            [self.name_activity, self.name_teacher, str(self.days), str(self.time_start),
+             str(self.time_end), str(self.price), str(self.limit_members), str(self.members),
+             str(self.id)])
         return ret_string
 
     def display(self):
-        disp_string = ' '.join([self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
+        disp_string = ' '.join(
+            [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format()])
         return disp_string
 
     def tree_header_map(self, header_map):
@@ -41,8 +44,8 @@ class Group:
         return entries_list
 
     def tree_entries(self, header_map):
-        raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(), self.timetable_format(),
-                            self.price,
+        raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(),
+                            self.timetable_format(),                            self.price,
                             len(self.members), self.limit_members, self.id]
         entries_list = list()
         for entry, isincluded in zip(raw_entries_list, header_map):
@@ -95,10 +98,10 @@ class Group:
 
 
 def available_id(elements_list):
-    get_id = lambda element: element.id
+    def get_id(element): return element.id
     map_ids = map(get_id, elements_list)
     list_ids = list(map_ids)
-    if len(list_ids) is 0:
+    if len(list_ids) == 0:
         id_available = 0
     else:
         id_available = max(list_ids) + 1
@@ -106,7 +109,7 @@ def available_id(elements_list):
 
 
 def check_id_integrity(elements_list):
-    get_id = lambda element: element.id
+    def get_id(element): return element.id
     map_ids = map(get_id, elements_list)
     list_ids = list(map_ids)
     if len(set(list_ids)) < len(list_ids):
