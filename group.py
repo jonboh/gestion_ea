@@ -1,6 +1,6 @@
 class Group:
     tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros',
-                   'Limite de Miembros',                 'ID Grupo']
+                   'Limite de Miembros', 'ID Grupo']
     default_header_map = [1 for _ in tree_header]
 
     def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00',
