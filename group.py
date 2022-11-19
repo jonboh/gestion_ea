@@ -1,11 +1,10 @@
 class Group:
-    tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'Numero de Miembros',
-                   'Limite de Miembros', 'ID Grupo']
+    tree_header = ['Actividad', 'Monitor/a', 'Dias', 'Horario', 'Precio', 'IVA',
+                   'Numero de Miembros', 'Limite de Miembros', 'ID Grupo']
     default_header_map = [1 for _ in tree_header]
 
     def __init__(self, name_activity='', name_teacher='', days='{}', time_start='00', time_end='00',
-                 price='0.0',
-                 limit_members='0', members='{}',
+                 price='0.0', iva='0.21', limit_members='0', members='{}',
                  group_id='-1'):
         self.name_activity = name_activity
         self.name_teacher = name_teacher
@@ -16,6 +15,7 @@ class Group:
         self.time_start = int(time_start)
         self.time_end = int(time_end)
         self.price = float(price)
+        self.iva = float(iva)
         if type(eval(members)) is dict:
             self.members = set()
         else:
@@ -26,8 +26,8 @@ class Group:
     def __str__(self):
         ret_string = ';'.join(
             [self.name_activity, self.name_teacher, str(self.days), str(self.time_start),
-             str(self.time_end), str(self.price), str(self.limit_members), str(self.members),
-             str(self.id)])
+             str(self.time_end), str(self.price), str(self.iva), str(self.limit_members),
+             str(self.members), str(self.id)])
         return ret_string
 
     def display(self):
@@ -45,7 +45,7 @@ class Group:
 
     def tree_entries(self, header_map):
         raw_entries_list = [self.name_activity, self.name_teacher, self.days_format(),
-                            self.timetable_format(),                            self.price,
+                            self.timetable_format(), self.price, self.iva,
                             len(self.members), self.limit_members, self.id]
         entries_list = list()
         for entry, isincluded in zip(raw_entries_list, header_map):

@@ -24,9 +24,16 @@ def write_clients(file_clients, clients_list, client_type):
 
 def load_groups(file_groups):
     with open(file_groups) as file:
-        _ = file.readline()  # column_names
-        groups_list = [gr.Group(*line.rstrip('\n').split(';'))
-                       for line in file]
+        header_line = file.readline()  # column_names
+        # check for legacy groups without iva field
+        if header_line.rstrip('\n') == 'name_activity;name_teacher;days;time_start;time_end;price;limit_members;members;group_id':
+            groups_list = list()
+            for line in file:
+                values_str = line.rstrip('\n').split(';')
+                groups_list.append(gr.Group(*values_str[:6], '0.21', *values_str[6:]))
+        else:  # otherwise process normally
+            groups_list = [gr.Group(*line.rstrip('\n').split(';'))
+                           for line in file]
     return groups_list
 
 
@@ -98,7 +105,8 @@ def purge_old_backups(backup_dir, old_backup_dir, max_oldness):
     backups = next(os.walk(backup_dir))[1]  # generator
     backups_dates = list(map(dateparser, backups))
     backups_oldness = list(map(lambda element:
-                               (datetime.date.today() - element[0]).total_seconds() / 60 / 60 / 24, backups_dates))
+                               (datetime.date.today() - element[0]).total_seconds() / 60 / 60 / 24,
+                               backups_dates))
     for i in range(0, len(backups)):
         if backups_oldness[i] > max_oldness:
             if backups_dates[i][1] is True:
