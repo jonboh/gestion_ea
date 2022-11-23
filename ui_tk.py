@@ -1159,11 +1159,11 @@ class ModifyClientUI(ClientUI):
         self.id_card_new.delete(0, tk.END)
         self.id_card_new.insert(0, self.client.id_card)
         self.id_card_new.grid(row=2, column=2, sticky=tk.N + tk.W)
-        self.phone1_new = tk.Entry(self.main_frame, text=self.client.phone1)
+        self.phone1_new = IntegerEntry(self.main_frame, text=self.client.phone1)
         self.phone1_new.delete(0, tk.END)
         self.phone1_new.insert(0, self.client.phone1)
         self.phone1_new.grid(row=3, column=2, sticky=tk.N + tk.W)
-        self.phone2_new = tk.Entry(self.main_frame, text=self.client.phone2)
+        self.phone2_new = IntegerEntry(self.main_frame, text=self.client.phone2)
         self.phone2_new.delete(0, tk.END)
         self.phone2_new.insert(0, self.client.phone2)
         self.phone2_new.grid(row=4, column=2, sticky=tk.N + tk.W)
@@ -1171,7 +1171,7 @@ class ModifyClientUI(ClientUI):
         self.email_new.delete(0, tk.END)
         self.email_new.insert(0, self.client.email)
         self.email_new.grid(row=5, column=2, sticky=tk.N + tk.W)
-        self.price_new = tk.Entry(self.main_frame, text=self.client.price)
+        self.price_new = FloatEntry(self.main_frame, text=self.client.price)
         self.price_new.delete(0, tk.END)
         self.price_new.insert(0, self.client.price)
         self.price_new.grid(row=6, column=2, sticky=tk.N+tk.W)
@@ -1686,29 +1686,33 @@ class ModifyGroupUI(GroupUI):
         start_min = self.group.timetable_format()[3:5]
         end_hour = self.group.timetable_format()[8:10]
         end_min = self.group.timetable_format()[11:13]
-        self.time_start_hour_new = tk.Entry(
+        self.time_start_hour_new = IntegerEntry(
             time_new_frame, justify="right", width=3)
         self.time_start_hour_new.delete(0, tk.END)
         self.time_start_hour_new.insert(0, start_hour)
         self.time_start_hour_new.grid(row=0, column=0, sticky=tk.N + tk.W)
-        self.time_start_min_new = tk.Entry(time_new_frame, width=3)
+        self.time_start_min_new = IntegerEntry(time_new_frame, width=3)
         self.time_start_min_new.delete(0, tk.END)
         self.time_start_min_new.insert(0, start_min)
         self.time_start_min_new.grid(row=0, column=1, sticky=tk.N + tk.W)
-        self.time_end_hour_new = tk.Entry(
+        self.time_end_hour_new = IntegerEntry(
             time_new_frame, justify="right", width=3)
         self.time_end_hour_new.delete(0, tk.END)
         self.time_end_hour_new.insert(0, end_hour)
         self.time_end_hour_new.grid(row=1, column=0, sticky=tk.N + tk.W)
-        self.time_end_min_new = tk.Entry(time_new_frame, width=3)
+        self.time_end_min_new = IntegerEntry(time_new_frame, width=3)
         self.time_end_min_new.delete(0, tk.END)
         self.time_end_min_new.insert(0, end_min)
         self.time_end_min_new.grid(row=1, column=1, sticky=tk.N + tk.W)
-        self.price_new = tk.Entry(self.root)
+        self.price_new = FloatEntry(self.root)
         self.price_new.delete(0, tk.END)
         self.price_new.insert(0, str(group.price))
         self.price_new.grid(row=4, column=2, sticky=tk.N + tk.W)
-        self.members_limit_new = tk.Entry(self.root)
+        self.vat_new = FloatEntry(self.root)
+        self.vat_new.delete(0, tk.END)
+        self.vat_new.insert(0, str(group.price))
+        self.vat_new.grid(row=4, column=2, sticky=tk.N + tk.W)
+        self.members_limit_new = IntegerEntry(self.root)
         self.members_limit_new.delete(0, tk.END)
         self.members_limit_new.insert(0, str(group.limit_members))
         self.members_limit_new.grid(row=6, column=2, sticky=tk.N + tk.W)
@@ -1856,6 +1860,7 @@ class ModifyGroupUI(GroupUI):
             self.group.time_end = int(
                 self.time_end_hour_new.get()) * 100 + int(self.time_end_min_new.get())
             self.group.price = float(self.price_new.get())
+            self.group.vat = float(self.vat_new.get())
             self.group.limit_members = int(self.members_limit_new.get())
             self.update_answers()
             self.new = True
@@ -2064,7 +2069,7 @@ class ModifyItemUI(ItemUI):
         self.name_new.delete(0, tk.END)
         self.name_new.insert(0, self.item.name)
         self.name_new.grid(row=0, column=2, sticky=tk.N + tk.W)
-        self.quantity_new = tk.Entry(self.main_frame)
+        self.quantity_new = IntegerEntry(self.main_frame)
         self.quantity_new.delete(0, tk.END)
         self.quantity_new.insert(0, self.item.quantity)
         self.quantity_new.grid(row=1, column=2, sticky=tk.N + tk.W)
@@ -2084,11 +2089,11 @@ class ModifyItemUI(ItemUI):
         self.ref_ea_new.delete(0, tk.END)
         self.ref_ea_new.insert(0, self.item.ref_ea)
         self.ref_ea_new.grid(row=5, column=2, sticky=tk.N + tk.W)
-        self.price_buy_new = tk.Entry(self.main_frame)
+        self.price_buy_new = FloatEntry(self.main_frame)
         self.price_buy_new.delete(0, tk.END)
         self.price_buy_new.insert(0, self.item.price_buy)
         self.price_buy_new.grid(row=6, column=2, sticky=tk.N + tk.W)
-        self.price_pvp_new = tk.Entry(self.main_frame)
+        self.price_pvp_new = FloatEntry(self.main_frame)
         self.price_pvp_new.delete(0, tk.END)
         self.price_pvp_new.insert(0, self.item.price_pvp)
         self.price_pvp_new.grid(row=7, column=2, sticky=tk.N + tk.W)
@@ -2356,6 +2361,34 @@ class Logger:
         with open(file_log, 'a') as file:
             file.write(self.pending_log)
         self.pending_log = ''
+
+
+class IntegerEntry(tk.Entry):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        vcmd = (self.register(self.validate), '%P')
+        self.config(validate="all", validatecommand=vcmd)
+
+    def validate(self, text):
+        try:
+            int(text)
+            return True
+        except Exception:
+            return False
+
+
+class FloatEntry(tk.Entry):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        vcmd = (self.register(self.validate), '%P')
+        self.config(validate="all", validatecommand=vcmd)
+
+    def validate(self, text):
+        try:
+            float(text)
+            return True
+        except Exception:
+            return False
 
 
 if __name__ == '__main__':
