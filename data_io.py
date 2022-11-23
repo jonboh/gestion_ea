@@ -25,7 +25,7 @@ def write_clients(file_clients, clients_list, client_type):
 def load_groups(file_groups):
     with open(file_groups) as file:
         header_line = file.readline()  # column_names
-        # check for legacy groups without iva field
+        # check for legacy groups without vat field
         if header_line.rstrip('\n') == 'name_activity;name_teacher;days;time_start;time_end;price;limit_members;members;group_id':
             groups_list = list()
             for line in file:
