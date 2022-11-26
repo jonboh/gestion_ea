@@ -13,6 +13,7 @@ import client as cl
 import group as gr
 import item as it
 import tree
+from utilities import client_has_vat
 
 
 class GestionEspacioAbierto:
@@ -126,7 +127,7 @@ class GestionEspacioAbierto:
             clients_buttons_frame, text='Alumnos', font=("Helvetica", 10),
             variable=self.al_chbox_var,
             command=lambda: self.clients_checkbox_update('Alumns'))
-        self.alumns_checkbox.grid(row=0, column=2, sticky=tk.N + tk.E)
+        self.alumns_checkbox.grid(row=0, column=2, sticky=tk.N + tk.W)
         self.al_chbox_bank_var = tk.IntVar()
         self.al_chbox_bank_var.set(0)
         self.alumns_checkbox_bank = tk.Checkbutton(
@@ -134,7 +135,23 @@ class GestionEspacioAbierto:
             font=("Helvetica", 10),
             variable=self.al_chbox_bank_var,
             command=lambda: self.clients_checkbox_update('bank'))
-        self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.E)
+        self.alumns_checkbox_bank.grid(row=0, column=3, sticky=tk.N + tk.W)
+        self.al_chbox_vat_var = tk.IntVar()
+        self.al_chbox_vat_var.set(0)
+        self.alumns_vat_checkbox_bank = tk.Checkbutton(
+            clients_buttons_frame, text='IVA',
+            font=("Helvetica", 10),
+            variable=self.al_chbox_vat_var,
+            command=lambda: self.clients_checkbox_update('vat'))
+        self.alumns_vat_checkbox_bank.grid(row=1, column=3, sticky=tk.N + tk.W)
+        self.al_chbox_novat_var = tk.IntVar()
+        self.al_chbox_novat_var.set(0)
+        self.alumns_novat_checkbox_bank = tk.Checkbutton(
+            clients_buttons_frame, text='No IVA',
+            font=("Helvetica", 10),
+            variable=self.al_chbox_novat_var,
+            command=lambda: self.clients_checkbox_update('novat'))
+        self.alumns_novat_checkbox_bank.grid(row=2, column=3, sticky=tk.N + tk.W)
         self.al_chbox_active_var = tk.IntVar()
         self.al_chbox_active_var.set(0)
         self.alumns_checkbox_active = tk.Checkbutton(
@@ -142,7 +159,7 @@ class GestionEspacioAbierto:
             font=("Helvetica", 10),
             variable=self.al_chbox_active_var,
             command=lambda: self.clients_checkbox_update('active'))
-        self.alumns_checkbox_active.grid(row=1, column=3, sticky=tk.N + tk.W)
+        self.alumns_checkbox_active.grid(row=1, column=2, sticky=tk.N + tk.W)
         # Search Box
         self.cl_search_entry = tk.Entry(clients_buttons_frame)
         self.cl_search_entry.grid(row=0, column=4, padx=(25, 0), sticky=tk.E)
@@ -457,13 +474,29 @@ class GestionEspacioAbierto:
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
+            self.al_chbox_vat_var.set(1)
+            self.al_chbox_novat_var.set(1)
             self.clear_search_clients()
         if invoker == 'bank':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
+            self.al_chbox_vat_var.set(1)
+            self.al_chbox_novat_var.set(1)
             self.clear_search_clients()
         if invoker == 'active':
+            self.cl_chbox_var.set(0)
+            self.pa_chbox_var.set(0)
+            self.al_chbox_var.set(1)
+            self.al_chbox_vat_var.set(1)
+            self.al_chbox_novat_var.set(1)
+            self.clear_search_clients()
+        if invoker == 'vat':
+            self.cl_chbox_var.set(0)
+            self.pa_chbox_var.set(0)
+            self.al_chbox_var.set(1)
+            self.clear_search_clients()
+        if invoker == 'novat':
             self.cl_chbox_var.set(0)
             self.pa_chbox_var.set(0)
             self.al_chbox_var.set(1)
@@ -486,18 +519,22 @@ class GestionEspacioAbierto:
             # Alumns
             if self.al_chbox_var.get() == 1:
                 for client in self.alumns:
-                    # Alumns + Only Bank Pay
-                    if self.al_chbox_bank_var.get() and self.al_chbox_active_var.get():
-                        if client.active == 1 and client.pay_bank:
-                            self.clients_tree.add_objects([client])
-                    elif self.al_chbox_bank_var.get():
-                        if client.pay_bank:
-                            self.clients_tree.add_objects([client])
-                    elif self.al_chbox_active_var.get():
-                        if client.active == 1:
-                            self.clients_tree.add_objects([client])
-                    else:
+                    isvalid = True
+                    if self.al_chbox_bank_var.get():
+                        if not client.pay_bank:
+                            isvalid = False
+                    if self.al_chbox_active_var.get():
+                        if not client.active:
+                            isvalid = False
+                    if not self.al_chbox_vat_var.get():
+                        if client_has_vat(client, self.groups):
+                            isvalid = False
+                    if not self.al_chbox_novat_var.get():
+                        if not client_has_vat(client, self.groups):
+                            isvalid = False
+                    if isvalid:
                         self.clients_tree.add_objects([client])
+
 
     def sort_clients(self):
         def normal_name_sort(clients):
@@ -1027,7 +1064,7 @@ class ClientUI:
         price_field = tk.Label(self.main_frame, text='Importe')
         price_field.grid(row=6, column=0, sticky=tk.N+tk.W)
         observations_field = tk.Label(self.main_frame, text='Observaciones')
-        observations_field.grid(row=7, column=0, sticky=tk.N+tk.W)
+        observations_field.grid(row=8, column=0, sticky=tk.N+tk.W)
         # client_id_field = tk.Label(self.main_frame, text='ID Cliente: ')
         # client_id_field.grid(row=6, column=0, sticky=tk.N + tk.W)
 
@@ -1076,6 +1113,8 @@ class ClientUI:
                                  column=0, sticky=tk.N + tk.W)
             pay_period_field = tk.Label(self.main_frame, text='Tipo Pago:')
             pay_period_field.grid(row=self.last_row+5,
+                                  column=0, sticky=tk.N + tk.W)
+            pay_period_field.grid(row=self.last_row+6,
                                   column=0, sticky=tk.N + tk.W)
 
             # FIELD VALUES
@@ -1556,12 +1595,14 @@ class GroupUI:
         time_field.grid(row=3, column=0, sticky=tk.N + tk.W)
         price_field = tk.Label(self.root, text='Precio: ')
         price_field.grid(row=4, column=0, sticky=tk.N + tk.W)
+        vat_field = tk.Label(self.root, text='IVA: ')
+        vat_field.grid(row=5, column=0, sticky=tk.N + tk.W)
         members_number_field = tk.Label(self.root, text='Numero Miembros')
-        members_number_field.grid(row=5, column=0, sticky=tk.N + tk.W)
+        members_number_field.grid(row=6, column=0, sticky=tk.N + tk.W)
         members_limit_field = tk.Label(self.root, text='Limite Miembros')
-        members_limit_field.grid(row=6, column=0, sticky=tk.N + tk.W)
+        members_limit_field.grid(row=7, column=0, sticky=tk.N + tk.W)
         group_id_field = tk.Label(self.root, text='ID Grupo: ')
-        group_id_field.grid(row=7, column=0, sticky=tk.N + tk.W)
+        group_id_field.grid(row=8, column=0, sticky=tk.N + tk.W)
 
         # FIELD VALUES
         self.name_activity_ans = tk.Label(self.root, text=group.name_activity)
@@ -1574,14 +1615,16 @@ class GroupUI:
         self.time_ans.grid(row=3, column=1, sticky=tk.N + tk.W)
         self.price_ans = tk.Label(self.root, text=str(group.price) + ' EUR')
         self.price_ans.grid(row=4, column=1, sticky=tk.N + tk.W)
+        self.vat_ans = tk.Label(self.root, text=str(group.vat))
+        self.vat_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
         self.members_number_ans = tk.Label(
             self.root, text=str(len(group.members)))
-        self.members_number_ans.grid(row=5, column=1, sticky=tk.N + tk.W)
+        self.members_number_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
         self.members_limit_ans = tk.Label(
             self.root, text=str(group.limit_members))
-        self.members_limit_ans.grid(row=6, column=1, sticky=tk.N + tk.W)
+        self.members_limit_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
         self.group_id_ans = tk.Label(self.root, text=str(group.id))
-        self.group_id_ans.grid(row=7, column=1, sticky=tk.N + tk.W)
+        self.group_id_ans.grid(row=8, column=1, sticky=tk.N + tk.W)
 
         # MEMBERS LIST
         self.members_frame = tk.Frame(self.root)
@@ -1710,8 +1753,8 @@ class ModifyGroupUI(GroupUI):
         self.price_new.grid(row=4, column=2, sticky=tk.N + tk.W)
         self.vat_new = FloatEntry(self.root)
         self.vat_new.delete(0, tk.END)
-        self.vat_new.insert(0, str(group.price))
-        self.vat_new.grid(row=4, column=2, sticky=tk.N + tk.W)
+        self.vat_new.insert(0, str(group.vat))
+        self.vat_new.grid(row=5, column=2, sticky=tk.N + tk.W)
         self.members_limit_new = IntegerEntry(self.root)
         self.members_limit_new.delete(0, tk.END)
         self.members_limit_new.insert(0, str(group.limit_members))
@@ -1878,6 +1921,7 @@ class ModifyGroupUI(GroupUI):
         self.days_ans.config(text=self.group.days_format())
         self.time_ans.config(text=self.group.timetable_format())
         self.price_ans.config(text=str(self.group.price) + ' EUR')
+        self.vat_ans.config(text=str(self.group.vat))
         self.members_number_ans.config(text=str(len(self.group.members)))
         self.members_limit_ans.config(text=str(self.group.limit_members))
         self.group_id_ans.config(text=str(self.group.id))
